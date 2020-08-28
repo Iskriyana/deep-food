@@ -1,7 +1,7 @@
-apple
+apple_food
 avocado
 banana
-blueberries
+blueberries_food
 oranges
 kiwi
 lemon
@@ -9,7 +9,7 @@ grapefruit
 pineapple
 melon
 watermelon
-oat
+oats_food
 stawberries
 fried eggs
 boiled eggs
