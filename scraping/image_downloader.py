@@ -1,7 +1,6 @@
 # Using the code from: https://github.com/deepanprabhu/duckduckgo-images-api
 from helpers.duckduckgo_imageURLdownloader import ImageURLDownloader
 import os
-from fastai.vision import *
 import wget
 
 max_imgs = 1
@@ -32,12 +31,26 @@ def download_images(food_list):
         food_urls = []
         with open(path + food + '.csv', 'r') as f:
             for l in f:
-                food_urls.append(l)
+                food_urls.append(l.split('\n')[0])
                 
         counter = 0
+        script_bash = []
         for url in food_urls:
             counter += 1
-            try:
-                wget.download(url, out=f'{path}/{food}/{food}_{counter}.jpg')
-            except:
-                print(f'{food} #{counter} failed to download')
+            script_bash.append(f'wget -O ./data/{food}/{food}_{counter}.jpg {url}')
+        # try:
+        #     wget.download(url, out=f'{path}/{food}/{food}_{counter}.jpg')
+        # except:
+        #     print(f'{food} #{counter} failed to download')
+        return script_bash
+
+
+def final_downloader(script_bash):
+  counter=0
+  for i in bash:
+    counter +=1
+    if counter % 100: print(counter)
+    try:
+      os.system(i)
+    except:
+      print(f'error #{counter}')
