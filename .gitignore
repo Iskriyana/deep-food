@@ -175,3 +175,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+#Folders
+scraping/images/
+scraping/images_new/
