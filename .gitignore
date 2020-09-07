@@ -179,3 +179,7 @@ cython_debug/
 #Folders
 scraping/images/
 scraping/images_new/
+background/
+gleb_google_images/
+gleb_google_images_no rot/
+test_images/comb/
