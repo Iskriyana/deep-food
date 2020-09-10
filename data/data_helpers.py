@@ -285,7 +285,8 @@ def load_bg_random(path):
     bg_folder = path
     bg_files = os.listdir(bg_folder)
     bg_files = [f for f in bg_files if not f[0] == '.']
-    bg_index = random.randrange(0, len(bg_files))
+    #bg_index = random.randrange(0, len(bg_files))
+    bg_index = np.random.randint(0, len(bg_files))
 
     bg = os.path.join(path, bg_files[bg_index])
 
@@ -326,7 +327,9 @@ def assemble_img_grid_from_df(data_df, bg_path, ingr_dict, ingr_size, grid_step,
 
         sample_size = ingr_dict[label]
         #random choice of image with repetition
-        ingredient_basket = random.choices(ingr_files, k=sample_size)
+        #ingredient_basket = random.choices(ingr_files, k=sample_size)
+        ingredient_basket = [np.random.choice(ingr_files.flatten(), size=sample_size)]
+        #import pdb; pdb.set_trace()
         rows, cols = ingr_size
         rows = int(np.random.uniform(size_jitter[0], size_jitter[1])*rows)
         cols = int(np.random.uniform(size_jitter[0], size_jitter[1])*cols)
@@ -364,7 +367,7 @@ def assemble_img_grid_from_df(data_df, bg_path, ingr_dict, ingr_size, grid_step,
     return bg, ingredients, coords
 
 
-def gen_artifical_image(data_df, classes, bg_path, N_min=5, N_max=10, spacing=150, size_jitter=(1.0,1.0)):
+def gen_one_artifical_image(data_df, classes, bg_path, N_min=5, N_max=10, spacing=150, size_jitter=(1.0,1.0)):
     """Generate one artificial sample.
 
     Args:
@@ -375,12 +378,12 @@ def gen_artifical_image(data_df, classes, bg_path, N_min=5, N_max=10, spacing=15
         N_max: maximum number of ingredients
         spacing: pixel spacing between ingredients
         size_jitter: (min, max) range for random scale factor
+        seed: seed for random generator
 
     Returns:
         img: artifical image
         labels: list of labels
     """
-
 
     N = np.random.randint(N_min, N_max+1)
     size = (spacing, spacing)
@@ -395,6 +398,6 @@ def gen_artifical_image(data_df, classes, bg_path, N_min=5, N_max=10, spacing=15
                                           spacing,
                                           size_jitter=size_jitter)
 
-    labels = list(ingredients.keys())
+    labels = set(ingredients.keys())
 
     return img, labels
