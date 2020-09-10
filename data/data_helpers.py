@@ -5,6 +5,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import numpy as np
+import random
+from PIL import Image
+import cv2
 
 
 def is_image(filename):
@@ -92,12 +95,14 @@ def generate_data_df(data_directories):
 
     return data_df
 
-def get_train_test_data_df(params):
+def get_train_test_data_df(data_directories, test_size, seed):
     """
     Standard pipeline to get train and test dataframes.
 
     Args:
-        params: parameter dictionary for this model
+        data_directories: directories to search for images
+        test_size: size of test set
+        seed: random state for train-test split
 
     Returns:
         data_df_train: train set DataFrame
@@ -107,7 +112,7 @@ def get_train_test_data_df(params):
         ind2class: dict-mapping from indices to classes
     """
     # get base data frame
-    data_df = generate_data_df(params['data_directories'])
+    data_df = generate_data_df(data_directories)
     classes = list(sorted(data_df.label.unique()))
     n_classes = len(classes)
 
@@ -115,8 +120,8 @@ def get_train_test_data_df(params):
     ind2class = {i:c for (c,i) in class2ind.items()}
 
     # train test split
-    data_df_train, data_df_test = train_test_split(data_df, test_size=params['test_size'],
-                                                   stratify=data_df.label, random_state=params['seed'])
+    data_df_train, data_df_test = train_test_split(data_df, test_size=test_size,
+                                                   stratify=data_df.label, random_state=seed)
 
     return data_df_train, data_df_test, classes, class2ind, ind2class
 
@@ -224,3 +229,172 @@ def show_label_distribution(data_df, ind2class, title=''):
         ax.annotate(str(p.get_height()), (p.get_x(), p.get_height()))
 
     return fig
+
+
+def get_validation_dict(path, classes, verbose=0):
+    """
+    Generates a dict containing images and classes for the validation set
+
+    Args:
+        path: Location of the validation set
+        classes: List of registered classes in the training set
+
+    Returns:
+        val_data: dict containting images and classes
+    """
+
+    validation_imgfiles = glob.glob(os.path.join(path, '*.jpg'))
+    validation_textfiles = [os.path.splitext(vf)[0]+'.txt' for vf in validation_imgfiles]
+
+    val_data = {}
+
+    for i, (img_file, txt_file) in enumerate(zip(validation_imgfiles, validation_textfiles)):
+        with open(txt_file) as f:
+            txt = f.read()
+        real_classes = txt.split('\n')
+
+        # get classes which exist in our dataset
+        take_classes = set(real_classes).intersection(set(classes))
+
+        # print classe which are discarded because they do not exist in dataset
+        discard_classes = set(real_classes) - set(classes)
+        if verbose >= 1:
+            print(f'File: {txt_file}')
+            print(f'Discarded: {discard_classes}')
+            print()
+
+        # register classes in dict
+        val_data[i] = {'image': img_file, 'classes': take_classes}
+
+    return val_data
+
+
+def load_bg_random(path):
+    """
+    Load a random background image from bg_folder
+
+    Args:
+        path: folder to load images flow_from_dataframe
+
+    Returns:
+        background: image
+        rows_b: number of rows
+        cols_b: number of columns
+        channels_b: number of channels
+    """
+    bg_folder = path
+    bg_files = os.listdir(bg_folder)
+    bg_files = [f for f in bg_files if not f[0] == '.']
+    bg_index = random.randrange(0, len(bg_files))
+
+    bg = os.path.join(path, bg_files[bg_index])
+
+    background = cv2.imread(bg)
+    rows_b, cols_b, channels_b = background.shape
+
+    return background, rows_b, cols_b, channels_b
+
+
+def assemble_img_grid_from_df(data_df, bg_path, ingr_dict, ingr_size, grid_step, size_jitter=(1.0,1.0)):
+    """
+    Takes in a dictionary of ingredients and their quantities.
+    Randomly picks a number of images from the specified ingredient category.
+    Randomly picks a background image.
+    Creates a grid on the background image.
+    Pastes the ingredient images on the background image.
+
+    Args:
+        data_df: DataFrame with filepaths and labels
+        bg_path: path to folder containing background images
+        ingr_dict: dict indicating number of elements per class
+        ingr_size: (tuple) size of element
+        grid_step: spacing between rows and columns
+
+    Returns:
+        bg: artificially generated image
+        ingredients: list of pasted images
+        coords: coordinates of images
+    """
+
+    # list with ingredient images
+    ingredients = []
+    labels = list(ingr_dict.keys())
+    n_ingr = sum(ingr_dict.values())
+
+    for label in labels:
+        ingr_files = data_df.set_index('label').loc[label].values
+
+        sample_size = ingr_dict[label]
+        #random choice of image with repetition
+        ingredient_basket = random.choices(ingr_files, k=sample_size)
+        rows, cols = ingr_size
+        rows = int(np.random.uniform(size_jitter[0], size_jitter[1])*rows)
+        cols = int(np.random.uniform(size_jitter[0], size_jitter[1])*cols)
+
+        for ing in ingredient_basket:
+            #ingredient_path = os.path.join(path, ingr_folder, ing)
+            ingredient = Image.open(ing[0])
+            ingredient = ingredient.resize((rows, cols))
+            ingredients.append(ingredient)
+
+    # background generation
+    background = load_bg_random(bg_path)[0]
+    background = cv2.cvtColor(background, cv2.COLOR_BGR2RGB)
+    background = Image.fromarray(background)
+    bg = background.resize((512, 1024)).copy()
+    rows_b, cols_b = bg.size
+
+    # grid definition
+    grid_width = bg.size[0]
+    grid_height = bg.size[1]
+    grid_step = grid_step
+    x = np.arange(0, grid_width - ingr_size[0], grid_step)
+    y = np.arange(0, grid_height - ingr_size[1], grid_step)
+    X,Y = np.meshgrid(x,y)
+    coords = np.array(list(zip(X.flatten(), Y.flatten())))
+
+    #no replacement, because otherwise the images get overwritten
+    coords = coords[np.random.choice(np.arange(len(coords)), size = n_ingr, replace = False), :]
+
+    # image pasting
+    for i, ingredient in enumerate(ingredients):
+        bg.paste(ingredient, (coords[i][0], coords[i][1]))
+
+    #print(list(zip(labels, coords)))
+    return bg, ingredients, coords
+
+
+def gen_artifical_image(data_df, classes, bg_path, N_min=5, N_max=10, spacing=150, size_jitter=(1.0,1.0)):
+    """Generate one artificial sample.
+
+    Args:
+        data_df: DataFrame with filepaths and labels
+        classes: class_labels
+        bg_path: path to background images
+        N_min: minimum number of ingredients
+        N_max: maximum number of ingredients
+        spacing: pixel spacing between ingredients
+        size_jitter: (min, max) range for random scale factor
+
+    Returns:
+        img: artifical image
+        labels: list of labels
+    """
+
+
+    N = np.random.randint(N_min, N_max+1)
+    size = (spacing, spacing)
+
+    ingredients = [classes[i] for i in np.random.randint(0, len(classes), N)]
+    ingredients = pd.Series(ingredients).value_counts().to_dict()
+
+    img, _, _ = assemble_img_grid_from_df(data_df,
+                                          bg_path,
+                                          ingredients,
+                                          tuple(size),
+                                          spacing,
+                                          size_jitter=size_jitter)
+
+    labels = list(ingredients.keys())
+
+    return img, labels
