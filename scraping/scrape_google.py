@@ -43,6 +43,8 @@ def google_query(query, images_to_download=600, verbose=1):
     image_urls = set()
 
     driver = webdriver.Firefox()
+    #DRIVER_PATH = './chromedriver'
+    #driver = webdriver.Chrome(executable_path=DRIVER_PATH)
     driver.maximize_window()
     driver.get(search_url.format(q=query))
 
