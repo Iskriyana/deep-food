@@ -89,7 +89,7 @@ def generate_data_df(data_directories):
                 _, folder = os.path.split(parent_folder)
                 labels.append(folder)
 
-        # generate pandas DataFrame
+    # generate pandas DataFrame
     data_df = pd.DataFrame({'file': filepaths, 'label': labels})
     data_df.label = data_df.label.apply(clean_label)
 
@@ -263,8 +263,11 @@ def get_validation_dict(path, classes, verbose=0):
             print(f'Discarded: {discard_classes}')
             print()
 
+        # load image
+        img = np.array(Image.open(img_file))
+
         # register classes in dict
-        val_data[i] = {'image': img_file, 'classes': take_classes}
+        val_data[i] = {'image': img, 'labels': take_classes}
 
     return val_data
 
@@ -398,6 +401,43 @@ def gen_one_artifical_image(data_df, classes, bg_path, N_min=5, N_max=10, spacin
                                           spacing,
                                           size_jitter=size_jitter)
 
+    img = np.array(img)
     labels = set(ingredients.keys())
 
     return img, labels
+
+
+def generate_artifical_validation_dataset(data_df, background_path, N_samples=100, N_min=5, N_max=10, spacing=150, size_jitter=(0.9,1.5), seed=11):
+    """
+    Generate artificial validation dataset, placing images on random background
+
+    Args:
+        data_df: Dataframe containing file paths and labels
+        background_path: path to folder containing random backgrounds
+        N_samples: number of images to create
+        N_min: minimum number of elements per image
+        N_max: maximum number of elements per image
+        spacing: distance between elements
+        size_jitter: random scaling factor range
+        seed: seed for random number generator
+
+    Returns:
+        val_data: dict with images and class labels
+    """
+
+    classes = list(sorted(data_df.label.unique()))
+    np.random.seed(seed)
+    val_data = {}
+    for n in range(N_samples):
+        img, labels = gen_one_artifical_image(data_df,
+                                              classes,
+                                              background_path,
+                                              N_min,
+                                              N_max,
+                                              spacing,
+                                              size_jitter)
+
+        sample = {'image': img, 'labels': labels}
+        val_data[n] = sample
+
+    return val_data
