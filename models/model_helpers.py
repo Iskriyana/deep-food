@@ -41,8 +41,6 @@ def image2d_as_strided(img, kernel_size=224, stride=32):
     Y = np.lib.stride_tricks.as_strided(Y, shape=shape, strides=strides)
     X = X[::stride, ::stride, 0, 0]
     Y = Y[::stride, ::stride, 0, 0]
-    #print(X.strides, img.strides)
-    #print(X.shape, img.shape)
 
     return new_img, X, Y
 
@@ -163,3 +161,68 @@ def visualize_predictions(img, predictions, probabilities, x0, y0, kernel_size):
             ax.add_patch(rect)
 
     return fig
+
+
+def gen_img_pyramid(img, fx=[1.0, 0.75,0.5], fy=[1.0, 0.75,0.5]):
+    """
+    Generate differently scaled versions of the same image:
+
+    Args:
+        img: Target image
+        fx: list of re-scaling factors in x-direction
+        fy: list of re-scaling factors in y-direction
+
+    Returns:
+        image_pyramid: list of re-scaled images
+    """
+    assert len(fx)==len(fy)
+
+    image_pyramid = []
+    for fx_, fy_ in zip(fx, fy):
+        new_img = cv2.resize(img, (0,0), fx=fx_, fy=fy_)
+        image_pyramid.append(new_img)
+
+    return image_pyramid
+
+
+def pyramid_prediction(model, preprocess_func, img, scaling_factors=[1.0, 0.75, 0.5], thr=0.9, kernel_size=224, strides=[64, 64, 32]):
+    """
+    Predict on image pyramid using the sliding window approach.
+
+    Args:
+        model: loaded model
+        preprocess_func: function for image pre-processing
+        img: given image
+        scaling_factors: list of scaling factors for pyramid
+        thr: threshold level for confidence required to give a prediction
+        kernel_size: size of the window square kernel
+        strides: list of strides for the sliding windows
+
+    Returns:
+        image_pyramid: list of rescaled images
+        pyramid_predictions: list of prediction arrays for each scaling factor
+        pyramid_probabilities: list of probability arrays for each scaling factor
+        pyramid_x0: list of x-coordinates for each scaling factor
+        pyramid_y0: list of y-coordinates for each scaling factor 
+    """
+
+    image_pyramid = gen_img_pyramid(img, fx=scaling_factors, fy=scaling_factors)
+
+
+    pyramid_predictions = []
+    pyramid_probabilities = []
+    pyramid_x0 = []
+    pyramid_y0 = []
+    for i, img_ in enumerate(image_pyramid):
+        predictions, probabilities, x0, y0 = sliding_prediction(model,
+                                                                preprocess_func,
+                                                                img_,
+                                                                thr=thr,
+                                                                kernel_size=kernel_size,
+                                                                stride=strides[i])
+        pyramid_predictions.append(predictions)
+        pyramid_probabilities.append(probabilities)
+        pyramid_x0.append(x0)
+        pyramid_y0.append(y0)
+
+    return image_pyramid, pyramid_predictions, pyramid_probabilities, pyramid_x0, pyramid_y0
