@@ -233,7 +233,8 @@ def show_label_distribution(data_df, ind2class, title=''):
 
 def get_validation_dict(path, classes, verbose=0):
     """
-    Generates a dict containing images and classes for the validation set
+    Generates a dict containing images and classes for the validation set.
+    Excludes all classes not given in the specified 'classes' list. 
 
     Args:
         path: Location of the validation set
@@ -265,6 +266,11 @@ def get_validation_dict(path, classes, verbose=0):
 
         # load image
         img = np.array(Image.open(img_file))
+
+        # rescale image to maximumg length/width 1024
+        scaling_factor = max(img.shape)/1024.
+        new_shape = (int(img.shape[1]/scaling_factor), int(img.shape[0]/scaling_factor))
+        img = cv2.resize(img, new_shape)
 
         # register classes in dict
         val_data[i] = {'image': img, 'labels': take_classes}

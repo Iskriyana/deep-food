@@ -203,7 +203,7 @@ def pyramid_prediction(model, preprocess_func, img, scaling_factors=[1.0, 0.75, 
         pyramid_predictions: list of prediction arrays for each scaling factor
         pyramid_probabilities: list of probability arrays for each scaling factor
         pyramid_x0: list of x-coordinates for each scaling factor
-        pyramid_y0: list of y-coordinates for each scaling factor 
+        pyramid_y0: list of y-coordinates for each scaling factor
     """
 
     image_pyramid = gen_img_pyramid(img, fx=scaling_factors, fy=scaling_factors)
@@ -226,3 +226,98 @@ def pyramid_prediction(model, preprocess_func, img, scaling_factors=[1.0, 0.75, 
         pyramid_y0.append(y0)
 
     return image_pyramid, pyramid_predictions, pyramid_probabilities, pyramid_x0, pyramid_y0
+
+
+def intersection_over_union_from_boxes(boxA, boxB):
+    """
+    Calculates the IoU score given two boxes.
+    (Source: https://www.pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/)
+
+    Args:
+        boxA: (x1,y1,x2,y2) of box A
+        boxB: (x1,y1,x2,y2) of box B
+
+    Returns:
+        iou: IoU score
+    """
+
+	# determine the (x, y)-coordinates of the intersection rectangle
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+
+    # compute the area of intersection rectangle
+    interArea = max(0, xB - xA + 0) * max(0, yB - yA + 0)
+
+    # compute the area of both the prediction and ground-truth rectangles
+    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+
+    return iou
+
+
+def nonmax_suppression(pred_labels, probabilities, x0, y0, kernel_size, overlap_thr=0.1):
+    """
+    Run nonmax suppression algorithm on bounding boxes.
+    Delete "other" boxes from predictions.
+
+    Args:
+        pred_labels: List of labels
+        probabilities: List of probabilities
+        x0: list of x-coordinates
+        y0: list of y-coordinates
+        kernel_size: width/height of boxes
+        overlap_thr: Maximal overlap between boxes in IoU
+
+    Returns:
+        new_pred_labels: clean list of lables
+        new_probabilities: associated probabilities
+        new_x0: corresponding x-coordinates
+        new_y0: corresponding y-coordinates
+    """
+
+    # define list of proposals as list of indices over all predictions
+    proposals = np.arange(0, len(pred_labels), dtype='int')
+
+    # intialize final list of boxes
+    final = []
+
+    # delete all boxes labeled as "other"
+    mask_other = [pred!='other' for pred in pred_labels]
+    proposals = list(proposals[mask_other])
+
+    while len(proposals)>0:
+
+        # add the box with the highest confidence to the final selection
+        ind_max = probabilities[proposals].argmax()
+        select = proposals.pop(ind_max)
+        final.append(select)
+
+        # delete all boxes which overlap substantially with this last selected box
+        delete_i = []
+        for i, p in enumerate(proposals):
+
+            # compute IoU score
+            boxA = (x0[select], y0[select], x0[select]+kernel_size, y0[select]+kernel_size)
+            boxB = (x0[p], y0[p], x0[p]+kernel_size, y0[p]+kernel_size)
+            iou = intersection_over_union_from_boxes(boxA, boxB)
+
+            if iou >= overlap_thr:
+                delete_i.append(i)
+
+        # update proposal list
+        proposals = [proposals[i] for i in range(len(proposals)) if i not in delete_i]
+
+
+    new_pred_labels = np.array(pred_labels)[final]
+    new_probabilities = np.array(probabilities)[final]
+    new_x0 = np.array(x0)[final]
+    new_y0 = np.array(y0)[final]
+
+    return new_pred_labels, new_probabilities, new_x0, new_y0
