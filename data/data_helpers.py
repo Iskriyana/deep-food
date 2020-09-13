@@ -146,7 +146,7 @@ def get_data_frame_iterator(df, image_generator, params):
     return iterator
 
 
-def deprocess_img(processed_img):
+def deprocess_imagenet(processed_img):
     """
     Function to invert the ImageNet-preprocessing.
     (Source: https://stackoverflow.com/questions/55987302/reversing-the-image-preprocessing-of-vgg-in-keras-to-return-original-image)
@@ -170,7 +170,8 @@ def deprocess_img(processed_img):
     return x
 
 
-def image_grid(image_batch, label_batch, ind2class, n_row=2, n_col=5, deprocess=True):
+def image_grid(image_batch, label_batch, ind2class, n_row=2, n_col=5, deprocess_func=None,
+               predict=[], predict_proba=[], hspace=0.2, wspace=0.1, fontsize=11):
     """
     Generate figure with example pictures on a grid.
 
@@ -178,29 +179,47 @@ def image_grid(image_batch, label_batch, ind2class, n_row=2, n_col=5, deprocess=
         image_batch: (batch_size x width x height x 3) array
         label_batch: (batch_size x n_classes) one-hot encoded array
         ind2class: dict-mapping from indices to class names
+        n_row: number of rows
+        n_col: number of columns
+        deprocess_func: function for image deprocessing
+        predict: list of predicted labels (integer-encoded)
+        predict_proba: list of associated probabilities
+        hspace: pyplot hspace parameter
+        wspace: pyplot wspace parameter
+        fontsize: font size of title
 
     Returns:
         figure: matplotlib.Figure containing the plot
     """
 
     N = n_row * n_col
-    figure = plt.figure(figsize=(n_col*2, n_row*2))
+    fig = plt.figure(figsize=(n_col*2, n_row*2))
     for i in range(N):
         plt.subplot(n_row, n_col, i + 1)
         plt.xticks([])
         plt.yticks([])
         plt.grid(False)
 
-        if deprocess:
-            img = deprocess_img(image_batch[i])
+        if deprocess_func:
+            img = deprocess_func(image_batch[i])
         else:
             img = image_batch[i]
         plt.imshow(img)
 
         ind = np.nonzero(label_batch[i])[0][0]
-        plt.title(ind2class[ind], color='r')
 
-    return
+        # generate plot title
+        title = ind2class[ind]
+        if len(predict) > 0:
+            title = ind2class[ind] + '/\n' + ind2class[predict[i]]
+            if len(predict_proba) > 0:
+                title = ind2class[ind] + '/\n' + ind2class[predict[i]] + f'({predict_proba[i]:.2f})'
+
+        plt.title(title, color='r', fontsize=fontsize)
+
+    plt.subplots_adjust(wspace=wspace, hspace=hspace)
+
+    return fig
 
 
 def show_label_distribution(data_df, ind2class, title=''):
@@ -234,7 +253,7 @@ def show_label_distribution(data_df, ind2class, title=''):
 def get_validation_dict(path, classes, verbose=0):
     """
     Generates a dict containing images and classes for the validation set.
-    Excludes all classes not given in the specified 'classes' list. 
+    Excludes all classes not given in the specified 'classes' list.
 
     Args:
         path: Location of the validation set
