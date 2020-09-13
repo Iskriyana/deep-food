@@ -1,20 +1,31 @@
-# Finding the most common ingredients
+# One hot encoding the recipes
 
-to find the most common ingredients you need to run
+This is the first step toward finding the similar recipes. Here, we one hot encode the recipes. This enables us to compare the recipes and find the similar ones.
+
+As the list of the ingredients is long, here (and in the detection of ingredients from the pictures) we confine ourselved to a limited number of the ingredients. 
+
+The script ```one_hot_encoding_recipes.py``` requires 
+* the number of important ingredients, i.e. ```nr_important_ingredients``` 
+* and a list composed of id of these elements in the database, i.e. ```important_ingredients```. 
+
+Here the database refers to the simplified 1M recipes.
+
+One can one hot encode the whole recipe list by
 
 ```
-python find_the_most_common_ingredients.py 100
-```
-where 100 is the number of ingredients you like to fetch.
-
-The result is written in a file named, 'common_ingredients_100.dat' and can be read as
-
-```
-nr_comm = 100
-filename = 'common_ingredients_' + str(nr_comm) + '.dat'
-
-with open(filename, 'r') as f:
-    tmp = json.loads(f.read())
+python one_hot_encoding_recipes.py
 ```
 
-Your list of ingredients are in variable tmp.
+The scripts saves the one hot encoded recipes into 
+
+```
+recipes_one_hotted.gz
+```
+
+and the list of the important ingredients into
+
+```
+important_ingredients.gz
+```
+
+One can later read the ```recipes_one_hotted.gz``` and use it to find the similar recipes. One should note that ```important_ingredients.gz``` is also required to find out which elements of the one hot coded vector refers to which ingredient.
