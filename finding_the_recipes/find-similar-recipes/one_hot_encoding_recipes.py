@@ -8,7 +8,7 @@ MAX_NR_INGREDIENTS = 3500
 nr_important_ingredients = 200
 
 print("... loading the original dataset")
-with np.load('../simplified-recipes-1M.npz', allow_pickle=True) as data:
+with np.load('../find_the_most_common_ingredients/simplified-recipes-1M.npz', allow_pickle=True) as data:
     recipes = data['recipes']
     ingredients = data['ingredients']
 print("... loading finished.\n")
