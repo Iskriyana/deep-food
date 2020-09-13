@@ -28,5 +28,6 @@ and the list of the important ingredients into
 important_ingredients.gz
 ```
 
+```recipes_one_hotted.gz``` is ~14Mb
 ## How to use the outputs
 One can read the ```recipes_one_hotted.gz``` and use it to find the similar recipes. One should note that ```important_ingredients.gz``` is also required to find out which elements of the one hot coded vector refers to which ingredient.
