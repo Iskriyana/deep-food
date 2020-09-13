@@ -1,4 +1,4 @@
-# One hot encoding the recipes
+# One hot encoding of the recipes
 
 This is the first step toward finding the similar recipes. Here, we one hot encode the recipes. This enables us to compare the recipes and find the similar ones.
 
