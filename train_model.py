@@ -131,10 +131,10 @@ def main(PARAMS):
 
     # download pre-trained model
     if PARAMS['base_net'] == 'resnet50':
-        pretrained_model = tf.keras.applications.ResNet50(input_shape=PARAMS['target_size']+(3,),
+        pretrained_model = tf.keras.applications.ResNet50(input_shape=tuple(PARAMS['target_size'])+(3,),
                                                           include_top=False)
     elif PARAMS['base_net'] == 'mobilenet_v2':
-        pretrained_model = tf.keras.applications.MobileNetV2(input_shape=PARAMS['target_size']+(3,),
+        pretrained_model = tf.keras.applications.MobileNetV2(input_shape=tuple(PARAMS['target_size'])+(3,),
                                                           include_top=False)
 
     # freeze pre-trained model
