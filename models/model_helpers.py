@@ -67,6 +67,52 @@ def imageRGB_as_strided(img, kernel_size=224, stride=32):
     return new_img, x0, y0
 
 
+def predict_on_whole_dataset(model, data_iterator, ind2class):
+    """
+    Generates prediciton on a given keras DataIterator object.
+    Iterates through the whole dataset and makes predictions for each item.
+
+    Args:
+        model: Trained model
+        data_iterator: Input data
+        ind2class: dict-mapping from indices to labels
+
+    Returns:
+        images: all images as a list
+        labels: all one-hot labels as a list
+        predict_i: integer-encoded predictions
+        predict_proba: associated confidence levels
+        predict_labels: predicted classes
+        ind_misclassified: indices of misclassified items
+    """
+
+    # get all images and labels in the given dataset
+    images = []
+    labels = []
+    for _ in range(len(data_iterator)):
+        imgs_, lbls_ = next(data_iterator)
+        images.append(imgs_)
+        labels.append(lbls_)
+
+    images = np.vstack(images)
+    labels = np.vstack(labels)
+
+    # get probabilites for each class
+    predict_proba = model.predict(images)
+
+    # get class predictions from maximum probabilites
+    predict_i = predict_proba.argmax(axis=1)
+    predict_labels = [ind2class[i] for i in predict_i]
+
+    # reduce array of probability to the probability of the predicted class
+    predict_proba = predict_proba.max(axis=1)
+
+    # get indices of misclassified examples
+    ind_misclassified = np.nonzero(predict_i != np.nonzero(labels)[1])[0]
+
+    return images, labels, predict_i, predict_proba, predict_labels, ind_misclassified
+
+
 def predict_stack(model, preprocess_func, stack):
     """
     Predict labels on a given image stack
@@ -126,7 +172,7 @@ def sliding_prediction(model, preprocess_func, img, thr=0.9, kernel_size=224, st
     return predictions, probabilities, x0, y0
 
 
-def visualize_predictions(img, predictions, probabilities, x0, y0, kernel_size):
+def visualize_predictions(img, predictions, probabilities, x0, y0, windowsize):
     """
     Generate visualization of predicted labels for bounding boxes.
 
@@ -136,7 +182,7 @@ def visualize_predictions(img, predictions, probabilities, x0, y0, kernel_size):
         probabilities: associated confidence levels
         x0: x-coordinate top left corner
         y0: y-coordinate top left corner
-        kernel_size: size of the sliding window kernel
+        windowsize: list of sizes for each window (square windows)
 
     Returns:
         fig: Figure containing the visualization
@@ -154,7 +200,7 @@ def visualize_predictions(img, predictions, probabilities, x0, y0, kernel_size):
         if (predictions[i] != "other"):
 
             # Create a Rectangle patch
-            rect = patches.Rectangle((x,y), kernel_size, kernel_size, linewidth=2, edgecolor='r', facecolor='none')
+            rect = patches.Rectangle((x,y), windowsize[i], windowsize[i], linewidth=2, edgecolor='r', facecolor='none')
             plt.text(x+5, y+20, predictions[i] + f'/{probabilities[i]:.2f}', fontsize=10, bbox=dict(facecolor='red', alpha=0.5, edgecolor='r'))
 
             # Add the patch to the Axes
@@ -204,6 +250,7 @@ def pyramid_prediction(model, preprocess_func, img, scaling_factors=[1.0, 0.75, 
         pyramid_probabilities: list of probability arrays for each scaling factor
         pyramid_x0: list of x-coordinates for each scaling factor
         pyramid_y0: list of y-coordinates for each scaling factor
+        pyramid_windowsize: list of sizes for each window (square windows)
     """
 
     image_pyramid = gen_img_pyramid(img, fx=scaling_factors, fy=scaling_factors)
@@ -213,6 +260,7 @@ def pyramid_prediction(model, preprocess_func, img, scaling_factors=[1.0, 0.75, 
     pyramid_probabilities = []
     pyramid_x0 = []
     pyramid_y0 = []
+    pyramid_windowsize = []
     for i, img_ in enumerate(image_pyramid):
         predictions, probabilities, x0, y0 = sliding_prediction(model,
                                                                 preprocess_func,
@@ -220,12 +268,20 @@ def pyramid_prediction(model, preprocess_func, img, scaling_factors=[1.0, 0.75, 
                                                                 thr=thr,
                                                                 kernel_size=kernel_size,
                                                                 stride=strides[i])
+
+        # re-scale positions to fit to the original image
+        f = scaling_factors[i]
+        x0 = x0/f
+        y0 = y0/f
+        window_size = int(kernel_size/f)
+
         pyramid_predictions.append(predictions)
         pyramid_probabilities.append(probabilities)
         pyramid_x0.append(x0)
         pyramid_y0.append(y0)
+        pyramid_windowsize.append([window_size]*len(predictions))
 
-    return image_pyramid, pyramid_predictions, pyramid_probabilities, pyramid_x0, pyramid_y0
+    return image_pyramid, pyramid_predictions, pyramid_probabilities, pyramid_x0, pyramid_y0, pyramid_windowsize
 
 
 def intersection_over_union_from_boxes(boxA, boxB):
@@ -262,7 +318,7 @@ def intersection_over_union_from_boxes(boxA, boxB):
     return iou
 
 
-def nonmax_suppression(pred_labels, probabilities, x0, y0, kernel_size, overlap_thr=0.1):
+def nonmax_suppression(pred_labels, probabilities, x0, y0, windowsize, overlap_thr=0.1):
     """
     Run nonmax suppression algorithm on bounding boxes.
     Delete "other" boxes from predictions.
@@ -272,7 +328,7 @@ def nonmax_suppression(pred_labels, probabilities, x0, y0, kernel_size, overlap_
         probabilities: List of probabilities
         x0: list of x-coordinates
         y0: list of y-coordinates
-        kernel_size: width/height of boxes
+        windowsize: list of size of boxes (square boxes)
         overlap_thr: Maximal overlap between boxes in IoU
 
     Returns:
@@ -304,8 +360,8 @@ def nonmax_suppression(pred_labels, probabilities, x0, y0, kernel_size, overlap_
         for i, p in enumerate(proposals):
 
             # compute IoU score
-            boxA = (x0[select], y0[select], x0[select]+kernel_size, y0[select]+kernel_size)
-            boxB = (x0[p], y0[p], x0[p]+kernel_size, y0[p]+kernel_size)
+            boxA = (x0[select], y0[select], x0[select]+windowsize[select], y0[select]+windowsize[select])
+            boxB = (x0[p], y0[p], x0[p]+windowsize[p], y0[p]+windowsize[p])
             iou = intersection_over_union_from_boxes(boxA, boxB)
 
             if iou >= overlap_thr:
@@ -319,5 +375,6 @@ def nonmax_suppression(pred_labels, probabilities, x0, y0, kernel_size, overlap_
     new_probabilities = np.array(probabilities)[final]
     new_x0 = np.array(x0)[final]
     new_y0 = np.array(y0)[final]
+    new_windowsize = np.array(windowsize)[final]
 
-    return new_pred_labels, new_probabilities, new_x0, new_y0
+    return new_pred_labels, new_probabilities, new_x0, new_y0, new_windowsize
