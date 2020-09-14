@@ -284,6 +284,50 @@ def pyramid_prediction(model, preprocess_func, img, scaling_factors=[1.0, 0.75, 
     return image_pyramid, pyramid_predictions, pyramid_probabilities, pyramid_x0, pyramid_y0, pyramid_windowsize
 
 
+def combine_pyramid_predictions(comb_ind, pyramid_predictions, pyramid_probabilities, pyramid_x0, pyramid_y0, pyramid_windowsize):
+    """
+    Combine the predictions of several pyramid "elements" (several differen object sizes).
+
+    Args:
+        comb_ind: indices specifying which pyramid elements to take
+        pyramid_predictions: nested list of predictions / output of function "pyramid_prediction"
+        pyramid_probabilities: nested list of probabilities / output of function "pyramid_prediction"
+        pyramid_x0: nested list of x-coordinates / output of function "pyramid_prediction"
+        pyramid_y0: nested list of y-coordinates / output of function "pyramid_prediction"
+        pyramid_windowsize: nested list of box sizes / output of function "pyramid_prediction"
+
+    Returns:
+        pred_labels: predictions
+        probabilities: probabilities
+        x0: x-coordinates
+        y0: y-coordinates
+        windows
+        ize: box sizes
+    """
+
+    # arrange all predictions of selected pyramid levels into one list
+    predictions = []
+    probabilities = []
+    x0 = []
+    y0 = []
+    windowsize = []
+    for ind in comb_ind:
+        predictions.extend(pyramid_predictions[ind])
+        probabilities.extend(pyramid_probabilities[ind])
+        x0.extend(pyramid_x0[ind])
+        y0.extend(pyramid_y0[ind])
+        windowsize.extend(pyramid_windowsize[ind])
+
+    # cast to numpy array
+    predictions = np.array(predictions)
+    probabilities = np.array(probabilities)
+    x0 = np.array(x0)
+    y0 = np.array(y0)
+    windowsize = np.array(windowsize)
+
+    return predictions, probabilities, x0, y0, windowsize
+
+
 def intersection_over_union_from_boxes(boxA, boxB):
     """
     Calculates the IoU score given two boxes.
@@ -378,3 +422,63 @@ def nonmax_suppression(pred_labels, probabilities, x0, y0, windowsize, overlap_t
     new_windowsize = np.array(windowsize)[final]
 
     return new_pred_labels, new_probabilities, new_x0, new_y0, new_windowsize
+
+
+def object_detection_sliding_window(model, input_img, preprocess_function, kernel_size, ind2class, scaling_factors, sliding_strides, thr, overlap_thr):
+    """
+    Detect objects on given input image using the whole sliding window pipeline
+    including image pyramids and non-maximum suppression.
+
+    Args:
+        model: image classification model
+        input_img: input image
+        preprocess_function: preprocessing function for the CNN
+        kernel_size: input size for the CNN
+        ind2class: dict-mapping from integers to class names
+        scaling_factors: image pyramid scaling factors
+        sliding_strides: image pyramid strides
+        thr: decision threshold
+        overlap_thr: threshold for non-maximum suppression:
+
+    Returns:
+        pred_labels: list of detected class names
+        probabilities: list of probabilities
+        x0: x-coordinates
+        y0: y-coordinates
+        windowize: box sizes
+    """
+
+    assert len(scaling_factors) == len(sliding_strides)
+
+    # predict object on all levels of the image pyramid
+    image_pyramid, pyramid_predictions, pyramid_probabilities, pyramid_x0, pyramid_y0, pyramid_windowsize = \
+        pyramid_prediction(model,
+                           preprocess_function,
+                           input_img,
+                           scaling_factors=scaling_factors,
+                           thr=thr,
+                           kernel_size=kernel_size,
+                           strides=sliding_strides)
+
+    # combine all predictions from all pyramid levels into one prediction array
+    N_pyramid = len(scaling_factors)
+    pred_labels, probabilities, x0, y0, windowsize = \
+        combine_pyramid_predictions(list(range(N_pyramid)),
+                                    pyramid_predictions,
+                                    pyramid_probabilities,
+                                    pyramid_x0,
+                                    pyramid_y0,
+                                    pyramid_windowsize)
+
+    # convert predictions from integer to class names
+    pred_labels = [ind2class[p] for p in pred_labels]
+
+    # perform non-maximum suppression
+    pred_labels, probabilities, x0, y0, windowsize = nonmax_suppression(pred_labels,
+                                                                        probabilities,
+                                                                        x0,
+                                                                        y0,
+                                                                        windowsize,
+                                                                        overlap_thr=overlap_thr)
+
+    return pred_labels, probabilities, x0, y0, windowsize
