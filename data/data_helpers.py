@@ -23,12 +23,18 @@ def clean_label(label):
 
   if label == 'apples':
     label = 'apple'
+  elif label == 'apricots':
+    label = 'apricot'
   elif label == 'avocados':
     label = 'avocado'
   elif label == 'bananas':
     label = 'banana'
+  elif label == 'cherries':
+    label = 'cherry'
   elif label == 'cantaloupes':
     label = 'melon'
+  elif label == 'figs':
+    label = 'fig'
   elif label == 'kiwifruit':
     label = 'kiwi'
   elif label == 'lemons':
