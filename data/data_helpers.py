@@ -37,6 +37,8 @@ def clean_label(label):
     label = 'fig'
   elif label == 'kiwifruit':
     label = 'kiwi'
+  elif label == 'grapefruits':
+    label = 'grapefruit'
   elif label == 'lemons':
     label = 'lemon'
   elif label == 'limes':
