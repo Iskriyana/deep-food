@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import glob, os
 import datetime
 from shutil import copyfile
+import argparse
 
 import data.data_helpers as data_helpers
 import models.model_helpers as model_helpers
@@ -625,47 +626,62 @@ def main(PARAMS):
 
 ############################################################################################################
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--json", type=str, default='',
+                    help="Optional JSON file defining the training parameters")
+args = parser.parse_args()
+
 if __name__ == '__main__':
 
-    # Specify folders from which to take data:
-    data_directories = [
-        'data/FIDS30',
-        'data/original_clean',
-        'data/update_9sep'
-    ]
+    json_file = str(args.json)
 
-    # Folder for validation set
-    real_validation_path = 'data/validation_real/'
-    real_artificial_path = 'data/validation_artificial/'
+    # load parameter dictionary if specified as an argument
+    if json_file:
+        with open(json_file, 'r') as f:
+            params = json.load(f)
 
-    # define training parameters
-    params = {
-        ### Define experiment name:
-        'experiment_name': 'test_all_again',
+    # otherwise define it manually
+    else:
+        # Specify folders from which to take data:
+        data_directories = [
+            'data/FIDS30',
+            'data/original_clean',
+            'data/update_9sep'
+        ]
 
-        ### Parameters for the CNN:
-        'data_directories': data_directories,
-        'test_size': 0.1,
-        'seed': 11,
-        'batch_size': 32,
-        'target_size': (112,112),
-        'epochs_cold': 1,
-        'epochs_finetune': 1,
-        'lr_cold': 0.001,
-        'lr_finetune': 1e-5,
+        # Folder for validation set
+        real_validation_path = 'data/validation_real/'
+        real_artificial_path = 'data/validation_artificial/'
 
-        'base_net': 'mobilenet_v2', # supported: resnet50/mobilenet_v2
-        'head_net': '[tf.keras.layers.GlobalAveragePooling2D(),\
-                     tf.keras.layers.Dropout(0.2)]',
+        # define training parameters
+        params = {
+            ### Define experiment name:
+            'experiment_name': 'test_all_again',
 
-        # The following parameters are for tuning the sliding window algorithm:
-        'real_validation_path': real_validation_path,
-        'artificial_validation_path': real_artificial_path,
-        'thr_list': [0.9, 0.93, 0.96],
-        'overlap_thr_list': [0.2, 0.3, 0.5],#list(np.arange(0,1,0.05)),
-        'scaling_factors': [1.0, 1.5, 2.0],
-        'sliding_strides': [32, 64, 128]
-    }
+            ### Parameters for the CNN:
+            'data_directories': data_directories,
+            'test_size': 0.1,
+            'seed': 11,
+            'batch_size': 32,
+            'target_size': (112,112),
+            'epochs_cold': 1,
+            'epochs_finetune': 1,
+            'lr_cold': 0.001,
+            'lr_finetune': 1e-5,
+
+            'base_net': 'mobilenet_v2', # supported: resnet50/mobilenet_v2
+            'head_net': '[tf.keras.layers.GlobalAveragePooling2D(),\
+                         tf.keras.layers.Dropout(0.2)]',
+
+            # The following parameters are for tuning the sliding window algorithm:
+            'real_validation_path': real_validation_path,
+            'artificial_validation_path': real_artificial_path,
+            'thr_list': [0.9, 0.93, 0.96],
+            'overlap_thr_list': [0.2, 0.3, 0.5],#list(np.arange(0,1,0.05)),
+            'scaling_factors': [1.0, 1.5, 2.0],
+            'sliding_strides': [32, 64, 128]
+        }
+
 
     # execute main function
     main(params)
