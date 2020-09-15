@@ -480,7 +480,7 @@ if __name__ == '__main__':
         # define training parameters
         params = {
             ### Define experiment name:
-            'experiment_name': 'mobilenet_v2_scan_sliding_window',
+            'experiment_name': 'mobilenet_v2_test',
 
             ### Parameters for the CNN:
             'data_directories': data_directories,
@@ -488,8 +488,8 @@ if __name__ == '__main__':
             'seed': 11,
             'batch_size': 32,
             'target_size': (224,224),
-            'epochs_cold': 10,
-            'epochs_finetune': 20,
+            'epochs_cold': 1,
+            'epochs_finetune': 1,
             'lr_cold': 0.001,
             'lr_finetune': 1e-5,
 
@@ -500,10 +500,10 @@ if __name__ == '__main__':
             # The following parameters are for tuning the sliding window algorithm:
             'real_validation_path': real_validation_path,
             'artificial_validation_path': real_artificial_path,
-            'thr_list': list(np.arange(0.1,1.05,0.1)),
+            'thr_list': [0.9, 0.93, 0.96, 0.99],
             'overlap_thr_list': list(np.arange(0.1,1.05,0.1)),
-            'scaling_factors': [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0],
-            'sliding_strides': [16, 32, 32, 64, 64, 128, 128],
+            'scaling_factors': [0.5, 1.0, 1.5, 2.0],
+            'sliding_strides': [16, 32, 64, 128],
         }
 
 
