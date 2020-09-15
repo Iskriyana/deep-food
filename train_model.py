@@ -275,6 +275,9 @@ def main(PARAMS):
 
     # define results dictionary
     results = {'params': PARAMS,
+               'classes': classes,
+               'ind2class': ind2class,
+               'class2ind': class2ind,
                'eval_df': eval_df.to_dict(),
                'history': history,
                'metrics': {'accuracy': accuracy,
@@ -647,7 +650,9 @@ if __name__ == '__main__':
         data_directories = [
             'data/FIDS30',
             'data/original_clean',
-            'data/update_9sep'
+            'data/update_9sep',
+            'data/marianne_update',
+            'data/data_gleb_upsample',
         ]
 
         # Folder for validation set
@@ -657,30 +662,30 @@ if __name__ == '__main__':
         # define training parameters
         params = {
             ### Define experiment name:
-            'experiment_name': 'test_all_again',
+            'experiment_name': 'mobilenet_v2_scan_sliding_window',
 
             ### Parameters for the CNN:
             'data_directories': data_directories,
             'test_size': 0.1,
             'seed': 11,
             'batch_size': 32,
-            'target_size': (112,112),
-            'epochs_cold': 1,
-            'epochs_finetune': 1,
+            'target_size': (224,224),
+            'epochs_cold': 10,
+            'epochs_finetune': 20,
             'lr_cold': 0.001,
             'lr_finetune': 1e-5,
 
             'base_net': 'mobilenet_v2', # supported: resnet50/mobilenet_v2
             'head_net': '[tf.keras.layers.GlobalAveragePooling2D(),\
-                         tf.keras.layers.Dropout(0.2)]',
+                         tf.keras.layers.Dropout(0.25)]',
 
             # The following parameters are for tuning the sliding window algorithm:
             'real_validation_path': real_validation_path,
             'artificial_validation_path': real_artificial_path,
-            'thr_list': [0.9, 0.93, 0.96],
-            'overlap_thr_list': [0.2, 0.3, 0.5],#list(np.arange(0,1,0.05)),
-            'scaling_factors': [1.0, 1.5, 2.0],
-            'sliding_strides': [32, 64, 128]
+            'thr_list': list(np.arange(0.1,1.05,0.1)),
+            'overlap_thr_list': list(np.arange(0.1,1.05,0.1)),
+            'scaling_factors': [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0],
+            'sliding_strides': [16, 32, 32, 64, 64, 128, 128],
         }
 
 
