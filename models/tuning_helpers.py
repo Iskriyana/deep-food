@@ -145,7 +145,7 @@ def tuning_loop_sliding_window_tight(scaling_factors, sliding_strides, thr_list,
             dataset = val_artificial_data
 
         n = len(dataset)
-        n = 2
+        #n = 2
         # loop over all samples in dataset
         for i_img in tqdm.tqdm(range(n)):
 
