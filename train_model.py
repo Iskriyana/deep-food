@@ -298,8 +298,7 @@ def main(PARAMS):
 
 
     #### Tune the sliding window algorithm
-
-    ##### Get validation data
+    log_image_stats = False
 
     # get validation set with "real" fridge scenes
     val_real_data = data_helpers.get_validation_dict(PARAMS['real_validation_path'], classes, verbose=0)
@@ -307,139 +306,45 @@ def main(PARAMS):
     # get validation set with "artificial" fridge scenes
     val_artificial_data = data_helpers.get_validation_dict(PARAMS['artificial_validation_path'], classes, verbose=0)
 
-    # show examples pictures from validation set
-    plt.figure(figsize=(12,12))
+    # show example pictures
+    fig = training_vis.show_example_picures_validation(val_real_data, 15,
+                                                       logging=logging,
+                                                       logpath=os.path.join(logdir, 'figures/example_validation_real.png'))
 
-    ax = plt.subplot(121)
-    plt.imshow(val_real_data[15]['image'])
-    plt.xticks([])
-    plt.yticks([])
-    plt.text(0.05, 0.98, '\n'.join(val_real_data[15]['labels']),
-             transform = ax.transAxes, verticalalignment='top',
-             bbox=dict(facecolor='red', alpha=0.5))
+    fig = training_vis.show_example_picures_validation(val_artificial_data, 15,
+                                                       logging=logging,
+                                                       logpath=os.path.join(logdir, 'figures/example_validation_artificial.png'))
 
 
-    ax = plt.subplot(122)
-    plt.imshow(val_artificial_data[15]['image'])
-    plt.xticks([])
-    plt.yticks([])
-    plt.text(0.05, 0.98, '\n'.join(val_artificial_data[15]['labels']),
-             transform = ax.transAxes, verticalalignment='top',
-             bbox=dict(facecolor='red', alpha=0.5))
+    # load classifier models
+    model = load_model(
+        logdir,
+        custom_objects=None,
+        compile=True
+    )
 
+    # define preprocessing function
+    if PARAMS['base_net'] == 'resnet50':
+        preprocess_function = preprocess_resnet50
+    elif PARAMS['base_net'] == 'mobilenet_v2':
+        preprocess_function = preprocess_mobilenet_v2
 
-    #### Run sliding window algorithm on validation set
-    #
-    # The following cell runs the sliding window algorithm with the specified parameters over the whole validation set (both artificial and real) and saves intermediate results in a temporaray dataframe `sliding_df`.
-    #
-    # The algorithm does not yet apply thresholding or non-maximum suppression. This dataframe therefore contains the classification results for __ALL__ boxes (without thresholding).
-    #
-    #  - `scaling_factors` are the different scaling factors for the image pyramid
-    #  - `sliding_strides` the are different strides for each level of the pyramid
-    #
-    # Using the results from this dataframe `sliding_df`, we can later perform thresholding and non-maximum suppression (which require a lot less computational power than the image classification itself) and find their optimal values.
-
-    import models.tuning_helpers as tuning_helpers
-
-    sliding_df = tuning_helpers.tuning_loop_sliding_window(scaling_factors=PARAMS['scaling_factors'],
-                                            sliding_strides=PARAMS['sliding_strides'],
-                                            val_real_data=val_real_data,
-                                            val_artificial_data=val_artificial_data,
-                                            ind2class=ind2class,
-                                            model=model,
-                                            preprocess_func=preprocess_function,
-                                            kernel_size=PARAMS['target_size'][0])
-
-    from itertools import combinations
-    import tqdm
-
-    # get all combinations of pyramid elements as list of index tuples
-    N_pyramid = len(PARAMS['scaling_factors'])
-    pyramid_combs = []
-    for n in range(1, N_pyramid+1):
-        pyramid_combs.extend(combinations(range(N_pyramid), n))
-
-
-    # Iterate over all samples in both datasets, test all combinations of hyperparemeters
-    # and evaluate the final performance of the object detection algorithm.
-    tuning_df = []
-
-    for sample in tqdm.tqdm(sliding_df):
-        data_type = sample['data_type']
-        # iterate over all values for the decision treshold
-        for thr in PARAMS['thr_list']:
-            # iterate over all values for the non-max suppresion threshold
-            for overlap_thr in PARAMS['overlap_thr_list']:
-                # iterate over all combination of pyramid levels / object sizes
-                for comb_ind in pyramid_combs:
-
-
-                    pred_labels, probabilities, x0, y0, windowsize = model_helpers.combine_pyramid_predictions(comb_ind,
-                                                                  sample['pyramid_pred_labels'],
-                                                                  sample['pyramid_probabilities'],
-                                                                  sample['pyramid_x0'],
-                                                                  sample['pyramid_y0'],
-                                                                  sample['pyramid_windowsize'])
-
-                    # apply decision threshold
-                    mask = np.array(probabilities)>thr
-                    pred_labels = pred_labels[mask]
-                    probabilities = probabilities[mask]
-                    x0 = x0[mask]
-                    y0 = y0[mask]
-                    windowsize = windowsize[mask]
-
-                    # apply non-maximum suppression algorithm
-                    pred_labels, probabilities, x0, y0, windowsize = model_helpers.nonmax_suppression(pred_labels,
-                                                                                          probabilities,
-                                                                                          x0,
-                                                                                          y0,
-                                                                                          windowsize,
-                                                                                          overlap_thr=overlap_thr)
-
-                    # get evaluation metrics
-                    actual_labels = sample['actual_labels']
-                    accuracy, precision, recall, TP, FP, TN, FN = tuning_helpers.get_evaluation_metrics(actual_labels, pred_labels, classes)
-
-                    # log results
-                    scaling_factors = np.array(PARAMS['scaling_factors'])[list(comb_ind)]
-                    sliding_strides = np.array(PARAMS['sliding_strides'])[list(comb_ind)]
-
-                    log = {'data_type': sample['data_type'],
-                           'i_img': sample['i_img'],
-                           'thr': thr,
-                           'overlap_thr': overlap_thr,
-                           'scaling_factors': scaling_factors.tolist(),
-                           'sliding_strides': sliding_strides.tolist(),
-
-                           'accuracy': accuracy,
-                           'precision': precision,
-                           'recall': recall,
-                           'TP': list(TP),
-                           'FP': list(FP),
-                           'TN': list(TN),
-                           'FN': list(FN),
-                           #'actual_labels': list(actual_labels),
-                           #'predicted_labels': pred_labels.tolist(),
-                           #'probabilities': probabilities.tolist(),
-                           #'x0': x0.tolist(),
-                           #'y0': y0.tolist(),
-                           #'windowsize': windowsize.tolist()
-                           }
-
-                    tuning_df.append(log)
+    results = tuning_helpers.tuning_loop_sliding_window_tight(PARAMS['scaling_factors'], PARAMS['sliding_strides'], PARAMS['thr_list'], PARAMS['overlap_thr_list'],
+                                                      val_real_data, val_artificial_data, ind2class, classes,
+                                                      model, preprocess_function, PARAMS['target_size'][0],
+                                                      log_image_stats=log_image_stats)
 
 
     # save tuning results to json-file
     if logging:
         with open(os.path.join(logdir, 'results_tuning.json'), 'w+') as f:
-            json.dump(tuning_df, f)
+            json.dump(results, f)
 
 
     #### Select combination of hyperparameters with highest F1-score
 
     # get summary metrics for each set of sliding window parameters
-    metrics_df = pd.DataFrame(tuning_df)
+    metrics_df = pd.DataFrame(results)
     metrics_df.scaling_factors = metrics_df.scaling_factors.astype(str)
 
     metrics_df = metrics_df.groupby(['data_type', 'thr', 'overlap_thr', 'scaling_factors'])['precision', 'recall'].mean(0)
@@ -459,6 +364,7 @@ def main(PARAMS):
     metrics_per_dataset['f1'] = (metrics_per_dataset['f1_artificial'] +  metrics_per_dataset['f1_real'])/2.
     metrics_per_dataset['precision'] = (metrics_per_dataset['precision_artificial'] +  metrics_per_dataset['precision_real'])/2.
     metrics_per_dataset['recall'] = (metrics_per_dataset['recall_artificial'] +  metrics_per_dataset['recall_real'])/2.
+
 
     # get optimal parameters (optimizing f1 score)
     opt_thr, opt_overlap_thr, opt_scaling_factors = metrics_per_dataset.loc[metrics_per_dataset.idxmax()['f1']].name
@@ -483,110 +389,22 @@ def main(PARAMS):
     print("Tuned parameters:")
     print(pd.Series(tuning_final))
 
+    #### Generate summary figures
 
-    #### Generate some summary figures for the tuning process
+    fig = training_vis.scatter_precision_recall(metrics_df,
+                               logging=logging,
+                               logpath=os.path.join(logdir, 'figures/precision_recall.png'))
 
-    sns.set_context('talk')
-    fig = plt.figure(figsize=(5,5))
-    ax = plt.subplot(111)
-    sns.scatterplot(data=metrics_df, x='recall', y='precision', hue='scaling_factors')
-    plt.xlim([0,1])
-    plt.ylim([0,1])
-    ax.legend(bbox_to_anchor=(1.7,1.0), title='scaling_factors')
+    fig = training_vis.lines_f1_overlap_thr(metrics_df,
+                                   logging=logging,
+                                   logpath=os.path.join(logdir, 'figures/f1_overlap_thr.png'))
 
-    if logging:
-        if not os.path.exists(os.path.join(logdir, 'figures')):
-            os.makedirs(os.path.join(logdir, 'figures'))
-        fig.savefig(os.path.join(logdir, 'figures/precision_recall.png'), bbox_inches='tight')
-
-
-    fig = plt.figure(figsize=(5,5))
-    ax = plt.subplot(111)
-    sns.lineplot(data=metrics_df, x='overlap_thr', y='f1', hue='scaling_factors')
-    plt.xlim([0,1])
-    plt.ylim([0,1])
-    ax.legend(bbox_to_anchor=(1.05,1.0), title='scaling_factors')
-
-    if logging:
-        fig.savefig(os.path.join(logdir, 'figures/f1_overlap_thr.png'), bbox_inches='tight')
-
-
-    fig = plt.figure(figsize=(15,5))
-    ax = plt.subplot(111)
-    sns.barplot(data=metrics_df, x='scaling_factors', y='f1')
-    sns.despine()
-
-    if logging:
-        fig.savefig(os.path.join(logdir, 'figures/f1_scaling_factors.png'), bbox_inches='tight')
-
-
-    image_stats_df = pd.DataFrame(tuning_df)
-    image_stats_df.scaling_factors = image_stats_df.scaling_factors.astype(str)
-
-    image_stats_df = image_stats_df.set_index(['data_type', 'thr', 'overlap_thr', 'scaling_factors'])
-
-    real_stats = {'TP': [], 'FP': [], 'TN': [], 'FN': []}
-
-    for sample in image_stats_df.loc[('real', opt_thr, opt_overlap_thr, str(opt_scaling_factors))].iterrows():
-        real_stats['TP'].extend(sample[1]['TP'])
-        real_stats['FP'].extend(sample[1]['FP'])
-        real_stats['TN'].extend(sample[1]['TN'])
-        real_stats['FN'].extend(sample[1]['FN'])
-
-    TP_count = pd.Series(real_stats['TP']).value_counts().reindex(classes, fill_value=0)
-    FP_count = pd.Series(real_stats['FP']).value_counts().reindex(classes, fill_value=0)
-    TN_count = pd.Series(real_stats['TN']).value_counts().reindex(classes, fill_value=0)
-    FN_count = pd.Series(real_stats['FN']).value_counts().reindex(classes, fill_value=0)
-
-
-    count_df = pd.concat([TP_count, FP_count, FN_count], axis=1)
-    count_df.columns = ['TP', 'FP', 'FN']
-
-    sns.set_context('paper')
-    fig = plt.figure(figsize=(25,3))
-    ax = plt.subplot(111)
-    count_df.plot(ax=ax, kind='bar')
-    ax.legend(loc='upper left')
-
-    if logging:
-        fig.savefig(os.path.join(logdir, 'figures/real_image_stats.png'), bbox_inches='tight')
-
-
-    image_stats_df = pd.DataFrame(tuning_df)
-    image_stats_df.scaling_factors = image_stats_df.scaling_factors.astype(str)
-
-    image_stats_df = image_stats_df.set_index(['data_type', 'thr', 'overlap_thr', 'scaling_factors'])
-
-    real_stats = {'TP': [], 'FP': [], 'TN': [], 'FN': []}
-
-    for sample in image_stats_df.loc[('artificial', opt_thr, opt_overlap_thr, str(opt_scaling_factors))].iterrows():
-        real_stats['TP'].extend(sample[1]['TP'])
-        real_stats['FP'].extend(sample[1]['FP'])
-        real_stats['TN'].extend(sample[1]['TN'])
-        real_stats['FN'].extend(sample[1]['FN'])
-
-    TP_count = pd.Series(real_stats['TP']).value_counts().reindex(classes, fill_value=0)
-    FP_count = pd.Series(real_stats['FP']).value_counts().reindex(classes, fill_value=0)
-    TN_count = pd.Series(real_stats['TN']).value_counts().reindex(classes, fill_value=0)
-    FN_count = pd.Series(real_stats['FN']).value_counts().reindex(classes, fill_value=0)
-
-
-    count_df = pd.concat([TP_count, FP_count, FN_count], axis=1)
-    count_df.columns = ['TP', 'FP', 'FN']
-
-    sns.set_context('paper')
-    fig = plt.figure(figsize=(25,3))
-    ax = plt.subplot(111)
-    count_df.plot(ax=ax, kind='bar')
-    ax.legend(loc='upper left')
-
-    if logging:
-        fig.savefig(os.path.join(logdir, 'figures/artificial_image_stats.png'), bbox_inches='tight')
+    fig = training_vis.bars_f1_scaling_factors(metrics_df,
+                                   logging=logging,
+                                   logpath=os.path.join(logdir, 'figures/f1_scaling_factors.png'))
 
 
     #### Generate example output pictures
-
-
     def generate_output_pictures(dataset, savepath, keys):
         """Small helper function to be applied to both real and artificial dataset
         """
@@ -628,7 +446,7 @@ def main(PARAMS):
     generate_output_pictures(val_real_data, savepath, keys=list(val_real_data.keys()))
 
 
-############################################################################################################
+################################################################################
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--json", type=str, default='',
