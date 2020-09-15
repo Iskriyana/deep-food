@@ -353,8 +353,9 @@ def main(PARAMS):
     metrics_df = pd.DataFrame(results)
     metrics_df.scaling_factors = metrics_df.scaling_factors.astype(str)
 
-    metrics_df = metrics_df.groupby(['data_type', 'thr', 'overlap_thr', 'scaling_factors'])['precision', 'recall'].mean(0)
+    metrics_df = metrics_df.groupby(['data_type', 'thr', 'overlap_thr', 'scaling_factors'])['precision', 'recall'].mean()
     metrics_df['f1'] = 2*metrics_df.precision*metrics_df.recall/(metrics_df.precision + metrics_df.recall)
+    metrics_df['f1'] = metrics_df['f1'].fillna(0)
     metrics_df = metrics_df.reset_index()
 
     # save summary metrics evaluation to json
@@ -362,7 +363,7 @@ def main(PARAMS):
         metrics_df.to_json(os.path.join(logdir, 'metrics_df.json'))
 
     # aggregate metrics per type of dataset
-    metrics_per_dataset = metrics_df.pivot(index=['thr', 'overlap_thr', 'scaling_factors'],
+    metrics_per_dataset = metrics_df.pivot_table(index=['thr', 'overlap_thr', 'scaling_factors'],
                                            columns=['data_type'],
                                            values=['f1', 'precision', 'recall'])
     new_columns = [a + '_' + b for (a,b) in metrics_per_dataset.columns]
