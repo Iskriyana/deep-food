@@ -290,8 +290,8 @@ def main(PARAMS):
                            'micro-precision': micro_precision,
                            'macro-precision': macro_precision,
                            'micro-recall': micro_recall,
-                           'macro-recall': macro_recall,
-               'model_path': logdir}}
+                           'macro-recall': macro_recall},
+               'model_path': logdir}
 
     # save the model
     if saving:
@@ -323,11 +323,11 @@ def main(PARAMS):
 
 
     # load classifier models
-    model = load_model(
-        logdir,
-        custom_objects=None,
-        compile=True
-    )
+    #model = load_model(
+    #    logdir,
+    #    custom_objects=None,
+    #    compile=True
+    #)
 
     # define preprocessing function
     if PARAMS['base_net'] == 'resnet50':
