@@ -25,7 +25,7 @@ import json
 from tensorflow.keras.models import Sequential, save_model, load_model
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input as preprocess_mobilenet_v2
 from tensorflow.keras.applications.resnet50 import preprocess_input as preprocess_resnet50
-from tensorflow.keras.applications.inception_v3 import preprocess_inception_v3
+from tensorflow.keras.applications.inception_v3 import preprocess_input as preprocess_inception_v3
 
 
 
