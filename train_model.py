@@ -25,6 +25,7 @@ import json
 from tensorflow.keras.models import Sequential, save_model, load_model
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input as preprocess_mobilenet_v2
 from tensorflow.keras.applications.resnet50 import preprocess_input as preprocess_resnet50
+from tensorflow.keras.applications.inception_v3 import preprocess_inception_v3
 
 
 
@@ -79,6 +80,8 @@ def main(PARAMS):
         preprocess_function = preprocess_resnet50
     elif PARAMS['base_net'] == 'mobilenet_v2':
         preprocess_function = preprocess_mobilenet_v2
+    elif PARAMS['base_net'] == 'inception_v3':
+        preprocess_function = preprocess_inception_v3
 
     # crea ImageDataGenerator with data augmentations
     image_generator_train = ImageDataGenerator(horizontal_flip=True,
@@ -141,6 +144,9 @@ def main(PARAMS):
                                                           include_top=False)
     elif PARAMS['base_net'] == 'mobilenet_v2':
         pretrained_model = tf.keras.applications.MobileNetV2(input_shape=tuple(PARAMS['target_size'])+(3,),
+                                                          include_top=False)
+    elif PARAMS['base_net'] == 'inception_v3':
+        pretrained_model = tf.keras.applications.InceptionV3(input_shape=tuple(PARAMS['target_size'])+(3,),
                                                           include_top=False)
 
     # freeze pre-trained model
@@ -334,6 +340,8 @@ def main(PARAMS):
         preprocess_function = preprocess_resnet50
     elif PARAMS['base_net'] == 'mobilenet_v2':
         preprocess_function = preprocess_mobilenet_v2
+    elif PARAMS['base_net'] == 'inception_v3':
+        preprocess_function = preprocess_inception_v3
 
     results = tuning_helpers.tuning_loop_sliding_window_tight(PARAMS['scaling_factors'], PARAMS['sliding_strides'], PARAMS['thr_list'], PARAMS['overlap_thr_list'],
                                                       val_real_data, val_artificial_data, ind2class, classes,
@@ -478,6 +486,7 @@ if __name__ == '__main__':
             'data/update_9sep',
             'data/marianne_update',
             'data/data_gleb_upsample',
+            'data/semi_artificial',
         ]
 
         # Folder for validation set
@@ -487,7 +496,7 @@ if __name__ == '__main__':
         # define training parameters
         params = {
             ### Define experiment name:
-            'experiment_name': 'mobilenet_v2_test',
+            'experiment_name': 'inception_v3_semiart',
 
             ### Parameters for the CNN:
             'data_directories': data_directories,
@@ -495,20 +504,20 @@ if __name__ == '__main__':
             'seed': 11,
             'batch_size': 32,
             'target_size': (224,224),
-            'epochs_cold': 1,
-            'epochs_finetune': 1,
+            'epochs_cold': 10,
+            'epochs_finetune': 30,
             'lr_cold': 0.001,
             'lr_finetune': 1e-5,
 
-            'base_net': 'mobilenet_v2', # supported: resnet50/mobilenet_v2
+            'base_net': 'inception_v3', # supported: resnet50/mobilenet_v2/inception_v3
             'head_net': '[tf.keras.layers.GlobalAveragePooling2D(),\
                          tf.keras.layers.Dropout(0.25)]',
 
             # The following parameters are for tuning the sliding window algorithm:
             'real_validation_path': real_validation_path,
             'artificial_validation_path': real_artificial_path,
-            'thr_list': [0.9, 0.93, 0.96, 0.99],
-            'overlap_thr_list': list(np.arange(0.1,1.05,0.1)),
+            'thr_list': [0.84, 0.87, 0.9, 0.93, 0.96, 0.99],
+            'overlap_thr_list': [0.1, 0.2],
             'scaling_factors': [0.5, 1.0, 1.5, 2.0],
             'sliding_strides': [16, 32, 64, 128],
         }
