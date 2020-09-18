@@ -179,7 +179,7 @@ def deprocess_imagenet(processed_img):
 
 
 def image_grid(image_batch, label_batch, ind2class, n_row=2, n_col=5, deprocess_func=None,
-               predict=[], predict_proba=[], hspace=0.2, wspace=0.1, fontsize=11):
+               predict=[], predict_proba=[], hspace=0.2, wspace=0.1, fontsize=11, fontcolor='r'):
     """
     Generate figure with example pictures on a grid.
 
@@ -223,7 +223,7 @@ def image_grid(image_batch, label_batch, ind2class, n_row=2, n_col=5, deprocess_
             if len(predict_proba) > 0:
                 title = ind2class[ind] + '/\n' + ind2class[predict[i]] + f'({predict_proba[i]:.2f})'
 
-        plt.title(title, color='r', fontsize=fontsize)
+        plt.title(title, color=fontcolor, fontsize=fontsize)
 
     plt.subplots_adjust(wspace=wspace, hspace=hspace)
 

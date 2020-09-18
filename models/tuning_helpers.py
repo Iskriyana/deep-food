@@ -188,7 +188,7 @@ def tuning_loop_sliding_window_tight(scaling_factors, sliding_strides, thr_list,
                 for thr in thr_list:
 
                     # apply decision threshold
-                    mask = np.array(comb_probabilities)>thr
+                    mask = np.array(comb_probabilities)>=thr
                     thr_pred_labels = comb_pred_labels[mask]
                     thr_probabilities = comb_probabilities[mask]
                     thr_x0 = comb_x0[mask]
