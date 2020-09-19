@@ -79,6 +79,7 @@ overlap_thr = 0.2
 scaling_factors = [1.5]
 sliding_strides = [64]
 
+@st.cache
 def make_prediction(image):
     pred_labels, probabilities, x0, y0, windowsize = \
     model_helpers.object_detection_sliding_window(model=loaded_model, 
@@ -153,6 +154,11 @@ activate_vision = st.button("deep-foodie activate your vision")
 
 print(activate_vision)
 
+pred_labels = np.array([])
+probabilities = np.array([])
+x0 = np.array([])
+y0 = np.array([])
+windowsize = np.array([])
 
 if activate_vision:
     st.write("Request accepted")
@@ -164,25 +170,34 @@ if activate_vision:
     compile=True
 )
     st.write('Making Predictions...')
-    make_prediction(img)
+    pred_labels, probabilities, x0, y0, windowsize  = make_prediction(img)
     
     #initialize function of detection
     
-    time.sleep(2)
-    st.write("Let's see what you've got...")
-    time.sleep(2)
-    st.write("ahaaa... not the cleanliest fridge, noted")
-    time.sleep(2)
-    st.write("I am almost done, don't be pushy")
-    time.sleep(2)
-    st.write("Analysis completed ✔️")
-    
-if st.button("'do more more things'"):
-    model_helpers.visualize_predictions(img, 
+    st.write('This is what deep-foodie has found')
+    fig = model_helpers.visualize_predictions(img, 
                                           pred_labels, 
                                           probabilities, 
                                           x0, 
                                           y0,
                                           windowsize)
+    st.write(fig)
     
+    st.write("Okay, here are the ingredients that you have:")
+    ""
+    st.write(set(pred_labels))
+    st.write("Would you like to add something more?")
+    
+    
+if st.button("'do more more things'"):
+    pred_labels = pred_labels
+    model_helpers.visualize_predictions(img, pred_labels, 
+                                          probabilities, 
+                                          x0, 
+                                          y0,
+                                          windowsize)
+    st.write("Okay, here are the ingredients that you have:")
+    ""
+    st.write(pred_labels)
+    st.write("Would you like to add something more?")
 
