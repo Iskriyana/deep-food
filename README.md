@@ -1,6 +1,6 @@
 # deep-food
 
-<img src="https://github.com/Iskriyana/deep-food/assets/master/blob/deep_food.jpg" width=300/>
+<img src="https://github.com/Iskriyana/deep-food/blob/master/assets/deep_food.jpg" width=300/>
 
 ### Installation
 
