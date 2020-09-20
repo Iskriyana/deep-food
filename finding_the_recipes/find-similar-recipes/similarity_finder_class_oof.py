@@ -14,7 +14,7 @@ print("... loading the original dataset")
 #    ingredients = data['ingredients']
 recipes = np.load('../find_the_most_common_ingredients/recipes_clean.npy', allow_pickle=True)
 
-ingredients = np.load('../find_the_most_common_ingredients/ingredients_clean.npy', allow_pickle=True)
+ingredients = np.load('../find_the_most_common_ingredients/ingredients_clean.npy', allow_pickle=True).item()
 print("... loading finished.\n")
 
 # list of important ingredients
@@ -31,9 +31,10 @@ important_ingredients = np.append(important_ingredients, np_out_of_fridge)
 
 important_ingredients_ids = []
 
-for ingr in range(len(important_ingredients)):
-    idx_ingr = np.where(ingredients == important_ingredients[ingr])
-    important_ingredients_ids.append(idx_ingr[0][0])
+for ingr in important_ingredients:
+    idx_ingr = ingredients[ingr]
+    #idx_ingr = np.where(ingredients == important_ingredients[ingr])
+    important_ingredients_ids.append(idx_ingr)
 
 # important_ingredients = np.random.randint(MAX_NR_INGREDIENTS, size=nr_important_ingredients)
 nr_important_ingredients = len(important_ingredients_ids) #200
@@ -43,8 +44,11 @@ print("... creating a one_hotted catalogue of the important ingredients")
 
 one_hot_catelogue = [[0]] * (MAX_NR_INGREDIENTS + 1)
 
-for i in range(len(important_ingredients)):
-    ingredient_id = important_ingredients[i]
+#for i in range(len(important_ingredients)):
+#    ingredient_id = important_ingredients[i]
+#    one_hot_catelogue[ingredient_id] = one_hot(i, nr_important_ingredients)
+for i in range(len(important_ingredients_ids)):
+    ingredient_id = important_ingredients_ids[i]
     one_hot_catelogue[ingredient_id] = one_hot(i, nr_important_ingredients)
 
 one_hot_catelogue = [np.array(x) for x in one_hot_catelogue]
