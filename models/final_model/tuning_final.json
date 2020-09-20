@@ -1,0 +1,1 @@
+{"opt_thr":0.87,"opt_overlap_thr":0.2,"opt_scaling_factors":[1.5],"opt_sliding_strides":[64],"f1_artificial":0.8602763533,"f1_real":0.6838051228,"precision_artificial":0.7964367854,"precision_real":0.7258513372,"recall_artificial":0.9352420635,"recall_real":0.6463633876,"f1":0.7720407381,"precision":0.7611440613,"recall":0.7908027256}
