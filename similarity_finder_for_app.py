@@ -18,7 +18,7 @@ def find_similar_recipes(target_recipe_txt):
     similarity = np.sum(one_hotted_recipes_bool * target_recipe_one_hotted, axis=1)
     max_sim = np.max(similarity)
 
-    df = pd.read_csv('/home/nima/tmp/RecipeNet/recipes_1M_shortened.csv')
+    df = pd.read_csv('recipes_1M_shortened.csv')
 
     all_ids = np.array(list(range(df.shape[0])))
 
