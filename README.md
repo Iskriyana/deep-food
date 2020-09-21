@@ -2,6 +2,12 @@
 
 <img src="https://github.com/Iskriyana/deep-food/blob/master/assets/deep_food.jpg" width=300/>
 
+## Dockerfile
+
+The Docker file image of this project can be found at:
+
+`https://hub.docker.com/repository/docker/gsrus96/deep-food`
+
 ### Installation
 
 `conda create -n deep_food python=3.6`
