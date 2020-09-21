@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import cv2
 import glob, os
 import json
+import csv
 
 from PIL import Image
 # TRYING TO IMPORT ALL THE DIFFICULT THINGS
@@ -17,6 +18,8 @@ from PIL import Image
 # import data.data_helpers as data_helpers
 import models.model_helpers as model_helpers
 # import models.tuning_helpers as tuning_helpers
+
+from finding_the_recipes.final_version_with_its_data.similarity_finder_for_app import find_similar_recipes
 
 ## setting style test!
 with open("./deployment/style.css") as f:
@@ -184,30 +187,35 @@ if activate_vision:
     st.write(pred_labels)
     st.write("Would you like to add something more?")
     
-    np.savetxt("ingredients.csv", pred_labels, delimiter=",", encoding='utf-8', fmt='%s')
-    
+    np.save("pred_labels.npy", pred_labels, allow_pickle=True) 
 
 if st.button('show me recipes'):
-    recipes = pd.read_csv('recipes.csv', delimiter = ';', encoding = "ISO-8859-1")
-    
-    recipe_name = recipes.loc[:, 'Name']
-    recipes_ingr = recipes.loc[:, 'Ingredients']
-    recipes_instructions = recipes.loc[:, 'Instructions']
-    recipe_url = recipes.loc[:, 'URL']    
+    pred_labels = np.load("pred_labels.npy", allow_pickle=True)
+    pred_labels_l = list(pred_labels)
+    ##recipes = pd.read_csv('recipes.csv', delimiter = ';', encoding = "ISO-8859-1")
+    recipes = find_similar_recipes(pred_labels_l)  
+    #recipe_name = recipes.loc[:, 'title']
+    #recipes_ingr = recipes.loc[:, 'ingredients']
+    ##recipes_instructions = recipes.loc[:, 'Instructions']
+    #recipe_url = recipes.loc[:, 'url']    
     
     #recipes_dict = recipes.to_dict()
     #st.write(recipes_dict)
-    for recipe in range(recipes.shape[0]):
-        st.title(recipe_name[recipe])
-        st.write(recipe_url[recipe])
+    #for recipe in range(recipes.shape[0]):
+    #    st.title(recipe_name[recipe])
+    #    st.write(recipe_url[recipe])
+    #    st.subheader('Ingredients:')
+    #    st.write(recipes_ingr[recipe]) 
+    #    #st.subheader('Instructions:')
+    #    #st.write(recipes_instructions[recipe])
+    #    #st.write(recipes.iloc[recipe, :])
+    ##st.dataframe(recipes)
+    
+    for index, row in recipes.iterrows():
+        st.title(row['title'])
+        st.write(row['url'])
         st.subheader('Ingredients:')
-        st.write(recipes_ingr[recipe]) 
-        st.subheader('Instructions:')
-        st.write(recipes_instructions[recipe])
-        #st.write(recipes.iloc[recipe, :])
-    #st.dataframe(recipes)
-
-
+        st.write(row['ingredients']) 
     
     
 
