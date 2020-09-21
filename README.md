@@ -8,6 +8,10 @@ The Docker file image of this project can be found at:
 
 `https://hub.docker.com/repository/docker/gsrus96/deep-food`
 
+In order to run the docker container programmatically from your PC,
+Pull the docker image from the Docker hub and then mount the image and run it:
+`docker run -it -w="/deep-food" [Docker_Image_ID] streamlit run app_web.py`
+
 ### Installation
 
 `conda create -n deep_food python=3.6`
