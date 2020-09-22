@@ -1,0 +1,37 @@
+FROM ubuntu:18.04
+
+RUN apt-get update && apt-get install -y \
+	git \
+	curl \
+	ca-certificates \
+	python3 \
+	python3-pip \
+	sudo \
+	&& rm -rf /var/lib/apt/lists/*
+	
+# It is very important to first run the sudo apt update
+RUN sudo apt-get update
+
+# With DEBIAN_FRONTEND=noninteractive we are able to skip questions during installation
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+# Needed to run cv2
+
+RUN sudo apt-get update && sudo apt install libgl1-mesa-glx -y
+RUN sudo apt-get update && sudo apt install libglib2.0-0 -y -f
+
+RUN mkdir /deep-food
+WORKDIR /deep-food
+
+COPY requirements_deployment.txt /deep-food/requirements_deployment.txt
+
+RUN pip3 install -r requirements_deployment.txt
+
+EXPOSE 8080
+
+COPY . /deep-food
+
+ENTRYPOINT streamlit run --server.port 8080 --server.enableCORS false app_web.py
