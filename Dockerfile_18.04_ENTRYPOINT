@@ -28,6 +28,8 @@ WORKDIR /deep-food
 
 COPY requirements_deployment.txt /deep-food/requirements_deployment.txt
 
+RUN sudo -H pip3 install --upgrade pip
+
 RUN pip3 install -r requirements_deployment.txt
 
 EXPOSE 8080
