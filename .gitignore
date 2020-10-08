@@ -177,19 +177,15 @@ dmypy.json
 cython_debug/
 
 #Folders
-scraping/images/
-scraping/images_new/
-background/
+data/scraping/images/
+data/scraping/images_new/
 gleb_google_images/
 gleb_google_images_no rot/
-test_images/comb/
 deep-food-img-initial/
-deep-food/
-test_images/*
-validation_real/
-scraping/scraping_200910/
+data/validation_real/
+data/scraping/scraping_200910/
+data/recipe_data_sets/RecipeNet
 
 #Files
 project_plan.jpg
-finding_the_recipes/find_the_most_common_ingredients/Untitled.ipynb
-finding_the_recipes/find_the_most_common_ingredients/common_ingredients_500.dat
+data/output/common_ingredients_500.dat
