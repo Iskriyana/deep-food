@@ -1,0 +1,9 @@
+body {
+    background-color: #dde1d5;
+    color: "black";
+}
+
+.fullScreenFrame > div {
+    display: flex;
+    justify-content: center;
+}

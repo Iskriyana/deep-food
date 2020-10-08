@@ -177,19 +177,27 @@ dmypy.json
 cython_debug/
 
 #Folders
-scraping/images/
-scraping/images_new/
-background/
+data/scraping/images/
+data/scraping/images_new/
 gleb_google_images/
 gleb_google_images_no rot/
-test_images/comb/
 deep-food-img-initial/
-deep-food/
-test_images/*
-validation_real/
-scraping/scraping_200910/
+data/validation_real/
+data/scraping/scraping_200910/
+data/recipe_data_sets/RecipeNet
+<<<<<<< HEAD
+food_identification/logs/
+food_identification/models/final_model/variables/
+=======
+>>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
 
 #Files
 project_plan.jpg
-finding_the_recipes/find_the_most_common_ingredients/Untitled.ipynb
-finding_the_recipes/find_the_most_common_ingredients/common_ingredients_500.dat
+data/output/common_ingredients_500.dat
+<<<<<<< HEAD
+data/recipe_data_sets/output/recipes_1M_shortened.csv
+data/recipe_data_sets/output/recipes_clean.npy
+recipes/input/recipes_one_hotted.npy
+data/ingredient_13_09_upsample.pkl
+=======
+>>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6

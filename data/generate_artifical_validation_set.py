@@ -40,9 +40,18 @@ def main():
     N_samples = int(args.N_samples)
 
     # Load image files
+<<<<<<< HEAD
+    data_directories = [str(Path().absolute().parents[0]/'data/FIDS30'),
+                        str(Path().absolute().parents[0]/'data/original_clean'),
+                        str(Path().absolute().parents[0]/'data/update_9sep'),
+                        str(Path().absolute().parents[0]/'data/marianne_update'),
+                        str(Path().absolute().parents[0]/'data/data_gleb_upsample'),
+                        str(Path().absolute().parents[0]/'data/semi_artificial'),]
+=======
     data_directories = ['FIDS30',
                         'original_clean',
                         'update_9sep']
+>>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
     test_size = 0.1
     _, data_df_test, _, _, _ = data_helpers.get_train_test_data_df(data_directories, test_size, seed)
 
