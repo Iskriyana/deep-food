@@ -187,6 +187,7 @@ data/scraping/scraping_200910/
 data/recipe_data_sets/RecipeNet
 food_identification/logs/
 food_identification/models/final_model/variables/
+.idea/
 
 #Files
 project_plan.jpg
