@@ -185,25 +185,12 @@ deep-food-img-initial/
 data/validation_real/
 data/scraping/scraping_200910/
 data/recipe_data_sets/RecipeNet
-<<<<<<< HEAD
-<<<<<<< HEAD
 food_identification/logs/
 food_identification/models/final_model/variables/
-=======
->>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
-=======
->>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
 
 #Files
 project_plan.jpg
 data/output/common_ingredients_500.dat
-<<<<<<< HEAD
-<<<<<<< HEAD
 data/recipe_data_sets/output/recipes_1M_shortened.csv
 data/recipe_data_sets/output/recipes_clean.npy
 recipes/input/recipes_one_hotted.npy
-data/ingredient_13_09_upsample.pkl
-=======
->>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
-=======
->>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
