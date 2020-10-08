@@ -7,12 +7,12 @@
 * this is what we attempt with our app deepfoodie: personalised recipe generation based on ingredients recognition from a photo
 
 ## Collaborators
-|Name     |  Github Page     |  Personal Website  |
-|-------------------|---------------|---------------------------------|
-|Michael Drews      | [michi-d]     | (https://github.com/michi-d)    |
-|Nima H. Siboni     | [nima-siboni] | (https://github.com/nima-siboni)|
-|Iskriyana Vasileva | [iskriyana]   | (https://github.com/Iskriyana)  |
-|Gleb Sidorov       | [gsidorov]    | (https://github.com/gsidorov)   |
+|Name               |  Github Page                    |  
+|-------------------|---------------------------------|
+|Michael Drews      | (https://github.com/michi-d)    |
+|Nima H. Siboni     | (https://github.com/nima-siboni)|
+|Iskriyana Vasileva | (https://github.com/Iskriyana)  |
+|Gleb Sidorov       | (https://github.com/gsidorov)   |
 
 ## Methods Used & Tech Stack 
 * Scraping - selenium, requests
