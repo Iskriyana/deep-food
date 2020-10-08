@@ -1,8 +1,25 @@
 # deep-food
+## Project Intro/Objective
+* have you ever wished you can make a photo of your fridge, upload it and get a recipe recommendation?
+* this is what we attempt with our app deepfoodie: personalised recipe generation based on ingredients recognition from a photo
+
+## Collaborators
+|Name     |  Github Page     |  Personal Website  |
+|-------------------|---------------|---------------------------------|
+|Michael Drews      | [michi-d]     | (https://github.com/michi-d)    |
+|Nima H. Siboni     | [nima-siboni] | (https://github.com/nima-siboni)|
+|Iskriyana Vasileva | [iskriyana]   | (https://github.com/Iskriyana)  |
+|Gleb Sidorov       | [gsidorov]    | (https://github.com/gsidorov)   |
 
 <img src="https://github.com/Iskriyana/deep-food/blob/master/assets/deep_food.jpg" width=300/>
 
-## Set up
+## Methods Used & Tech Stack 
+* Scraping - selenium, requests
+* Image manipulation & artificial image creation - Pillow, OpenCV
+* Deep Learning - Convolutional NN with TensorFlow
+* Transfer Learning - Resnet50, MobileNetV2, InceptionV3 
+
+## Getting Started
 
 `conda create -n deep_food python=3.6.10`
 
