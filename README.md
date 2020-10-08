@@ -1,4 +1,7 @@
 # deep-food
+
+<img src="https://github.com/Iskriyana/deep-food/blob/master/assets/deep_food.jpg" width=300/>
+
 ## Project Intro/Objective
 * have you ever wished you can make a photo of your fridge, upload it and get a recipe recommendation?
 * this is what we attempt with our app deepfoodie: personalised recipe generation based on ingredients recognition from a photo
@@ -10,8 +13,6 @@
 |Nima H. Siboni     | [nima-siboni] | (https://github.com/nima-siboni)|
 |Iskriyana Vasileva | [iskriyana]   | (https://github.com/Iskriyana)  |
 |Gleb Sidorov       | [gsidorov]    | (https://github.com/gsidorov)   |
-
-<img src="https://github.com/Iskriyana/deep-food/blob/master/assets/deep_food.jpg" width=300/>
 
 ## Methods Used & Tech Stack 
 * Scraping - selenium, requests
