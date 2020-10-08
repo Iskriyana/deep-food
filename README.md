@@ -3,6 +3,7 @@
 <img src="https://github.com/Iskriyana/deep-food/blob/master/assets/deep_food.jpg" width=300/>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## Set up
 
 `conda create -n deep_food python=3.6.10`
@@ -28,6 +29,8 @@ For 500 samples, use:
 `python /data/generate_artifical_validation_set.py validation_artificial --N_samples 500`
 
 =======
+=======
+>>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
 ## Dockerfile
 
 The Docker file image of this project can be found at:
@@ -53,4 +56,7 @@ Pull the docker image from the Docker hub and then mount the image and run it:
 For 500 samples, use:
 
 `python generate_artifical_validation_set.py validation_artificial --N_samples 500`
+<<<<<<< HEAD
+>>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
+=======
 >>>>>>> 913a94141ac68c93faf0fa104e453dedc6db04e6
