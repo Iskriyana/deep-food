@@ -8,6 +8,9 @@ ENV PATH="VIRTUAL_ENV/bin:$PATH"
 WORKDIR /deepfoodie
 ADD . /deepfoodie
 
+# Install dependencies
+RUN pip3 install -r requirements.txt
+
 # Expose port 
 ENV PORT 8081
 
