@@ -23,11 +23,11 @@
 ## Getting Started
 * `git clone https://github.com/Iskriyana/deep-food.git`
 
-* `conda create -n deep_food python=3.6.10`
+* `conda create -n deep-food python=3.6.10`
 
-* `conda activate deep_food`
+* `conda activate deep-food`
 
-* `pip3 install -r requirements.txt`
+* `pip install -r requirements.txt`
 
 * Download the following files in the folders as listed below:
     * in data/recipe_data_sets/output
@@ -35,9 +35,11 @@
         * https://drive.google.com/file/d/1hAk4KfT0fDOLRWXiK7WLi0oH1whhuA7w/view?usp=sharing
     * in recipes/input - https://drive.google.com/file/d/1-5HUvh4ho3BLdZo3LRnOsrz4CeVp24jj/view?usp=sharing 
 
+
 ## Run Web App locally
 * Go to the deployment folder `cd deployment`
 * Start the application `streamlit run app_web_deepfoodie.py`
+  * In case you get the error "ModuleNotFoundError: No module named 'importlib_metadata'", deactivate and activate the environment again
 * Upload a photo of your fridge or use our example photo in /assets/example_photo.jpg
 * Click on "deep-foodie activate your vision". The model is now running in order to identify the ingredients in the image.
 * Once deepfoodie is ready with the ingredients identification, you will see your picture with red squares and labels of what deepfoodie thinks he saw
