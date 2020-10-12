@@ -8,6 +8,8 @@ ENV PATH="VIRTUAL_ENV/bin:$PATH"
 WORKDIR /deepfoodie
 ADD . /deepfoodie
 
+COPY requirements.txt /deep-food/deployment/requirements.txt
+
 # Install dependencies
 RUN pip install -r ../requirements.txt
 
