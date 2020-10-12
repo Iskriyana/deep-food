@@ -8,11 +8,6 @@ ENV PATH="VIRTUAL_ENV/bin:$PATH"
 WORKDIR /deepfoodie
 ADD . /deepfoodie
 
-COPY ../requirements.txt ./requirements.txt
-
-# Install dependencies
-RUN pip install -r requirements.txt
-
 # Expose port 
 ENV PORT 8081
 
