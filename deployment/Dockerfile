@@ -15,4 +15,4 @@ RUN pip3 install -r requirements.txt
 ENV PORT 8081
 
 # Run the application:
-CMD ["gunicorn", "app:deepfoodie", "--config=config.py"]
+CMD ["streamlit", "app:app_web_deepfoodie.py", "--config=config.py"]
