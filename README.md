@@ -3,8 +3,8 @@
 <img src="https://github.com/Iskriyana/deep-food/blob/master/assets/deep_food.jpg" width=300/>
 
 ## Project Intro
-* have you ever wished you can make a photo of your fridge, upload it and get a recipe recommendation?
-* this is what we attempt with our app deepfoodie: personalised recipe generation based on ingredients recognition from a photo
+* Have you ever wished you can make a photo of your fridge, upload it and get a recipe recommendation?
+* This is what we attempt with our app deepfoodie: personalised recipe generation based on ingredients recognition from a photo
 
 ## Collaborators
 |Name               |  Github Page                    |  
@@ -29,19 +29,19 @@
 
 * `pip3 install -r requirements.txt`
 
-* download the following files in the folders as listed below:
+* Download the following files in the folders as listed below:
     * in data/recipe_data_sets/output
         * https://drive.google.com/file/d/1BRKp-h3b8-KoyesG1Q39f15cZFPUajRx/view?usp=sharing
         * https://drive.google.com/file/d/1hAk4KfT0fDOLRWXiK7WLi0oH1whhuA7w/view?usp=sharing
     * in recipes/input - https://drive.google.com/file/d/1-5HUvh4ho3BLdZo3LRnOsrz4CeVp24jj/view?usp=sharing 
 
 ## Run Web App locally
-* go to the deployment folder `cd deployment`
-* start the application `streamlit run app_web_deepfoodie.py`
-* upload a photo of your fridge or use our example photo in /assets/example_photo.jpg
-* click on "deep-foodie activate your vision". The model is now running in order to identify the ingredients in the image.
-* once deepfoodie is ready with the ingredients identification, you will see your picture with red squares and labels of what deepfoodie thinks he saw
-* now, click on "show me recipes" to get 3 gourmet recommendations. Enjoy!
+* Go to the deployment folder `cd deployment`
+* Start the application `streamlit run app_web_deepfoodie.py`
+* Upload a photo of your fridge or use our example photo in /assets/example_photo.jpg
+* Click on "deep-foodie activate your vision". The model is now running in order to identify the ingredients in the image.
+* Once deepfoodie is ready with the ingredients identification, you will see your picture with red squares and labels of what deepfoodie thinks he saw
+* Now, click on "show me recipes" to get 3 gourmet recommendations. Enjoy!
 
 
 ## Other useful points
