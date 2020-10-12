@@ -1,37 +1,18 @@
-FROM ubuntu:20.04
+FROM python:3.6.10
 
-RUN apt-get update && apt-get install -y \
-	git \
-	curl \
-	ca-certificates \
-	python3 \
-	python3-pip \
-	sudo \
-	&& rm -rf /var/lib/apt/lists/*
-	
-# It is very important to first run the sudo apt update
-RUN sudo apt-get update
+RUN pip install virtualenv
+ENV VIRTUAL_ENV=/deep-food
+RUN virtualenv deep-food -p python3.6.10
+ENV PATH="VIRTUAL_ENV/bin:$PATH"
 
-# With DEBIAN_FRONTEND=noninteractive we are able to skip questions during installation
+WORKDIR /app
+ADD . /app
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        tzdata \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN pip install -r requirements.txt
 
-# Needed to run cv2
+# Expose port 
+ENV PORT 8080
 
-RUN sudo apt-get update && sudo apt install libgl1-mesa-glx -y
-RUN sudo apt-get update && sudo apt install libglib2.0-0 -y -f
-
-RUN mkdir /deep-food
-WORKDIR /deep-food
-
-COPY requirements_deployment.txt /deep-food/requirements_deployment.txt
-
-RUN pip3 install -r requirements_deployment.txt
-
-EXPOSE 8080
-
-COPY . /deep-food
-
-CMD streamlit run --server.port 8080 --server.enableCORS false app_web.py
+# Run the application:
+CMD ["gunicorn", "app:app_web_deepfoodie", "--config=config.py"]
