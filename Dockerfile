@@ -24,5 +24,5 @@ WORKDIR /deep-food/deployment
 EXPOSE 8501
 
 # Run the application:
-CMD ["streamlit", "./app_web_deepfoodie.py"]
+CMD ["streamlit","run", "./app_web_deepfoodie.py"]
 # ENTRYPOINT streamlit run --server.port 8501 --server.enableCORS false app_web_deepfoodie.py
