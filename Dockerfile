@@ -21,7 +21,7 @@ RUN gdown https://drive.google.com/uc?id=1-5HUvh4ho3BLdZo3LRnOsrz4CeVp24jj
 
 WORKDIR /deep-food/deployment
 # Expose port 
-EXPOSE NV PORT 8501
+EXPOSE 8501
 
 # Run the application:
 CMD ["streamlit", "./app_web_deepfoodie.py"]
