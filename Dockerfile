@@ -12,16 +12,12 @@ RUN pip3 install -r requirements.txt
 
 WORKDIR /deep-food/data/recipes_data_set/output
 # Add recipe files: recipes_clean & recipes_1M_shortened.csv
-ADD https://drive.google.com/file/d/1BRKp-h3b8-KoyesG1Q39f15cZFPUajRx/view?usp=sharing \
-/deep-food/data/recipes_data_set/output
-
-ADD https://drive.google.com/file/d/1hAk4KfT0fDOLRWXiK7WLi0oH1whhuA7w/view?usp=sharing \
-/deep-food/data/recipes_data_set/output
+RUN gdown https://drive.google.com/uc?id=1BRKp-h3b8-KoyesG1Q39f15cZFPUajRx
+RUN gdown https://drive.google.com/uc?id=1hAk4KfT0fDOLRWXiK7WLi0oH1whhuA7w
 
 WORKDIR /deep-food/recipes/input
 # Add one-hot encoded recipes: recipes_one_hotted.npy
-ADD https://drive.google.com/file/d/1-5HUvh4ho3BLdZo3LRnOsrz4CeVp24jj/view?usp=sharing \
-/deep-food/recipes/input
+RUN gdown https://drive.google.com/uc?id=1-5HUvh4ho3BLdZo3LRnOsrz4CeVp24jj
 
 WORKDIR /deep-food/deployment
 # Expose port 
