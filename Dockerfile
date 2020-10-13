@@ -1,9 +1,9 @@
 FROM python:3.6.10
 
-RUN python -m venv deep-food -p python3.6.10
+RUN pip install virtualenv
+RUN python -m virtualenv deep-food -p python3.6.10
 RUN source deep-food/bin/activate
 
-#RUN pip install virtualenv
 #ENV VIRTUAL_ENV=/deep-food
 #RUN virtualenv deep-food -p python3.6.10
 #ENV PATH="VIRTUAL_ENV/bin:$PATH"
