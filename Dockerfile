@@ -6,6 +6,7 @@ FROM python:3.6.10
 #ENV PATH="VIRTUAL_ENV/bin:$PATH"
 
 WORKDIR /deep-food
+ADD . /deep-food
 # Install dependencies
 RUN pip3 install -r requirements.txt
 
