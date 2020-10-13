@@ -14,6 +14,8 @@ ADD . /deep-food
 # Install dependencies
 RUN pip3 install -r requirements.txt
 
+RUN apt-get update && apt-get install -y libgl1-mesa-dev
+
 WORKDIR /deep-food/data/recipes_data_set/output
 # Add recipe files: recipes_clean & recipes_1M_shortened.csv
 RUN gdown https://drive.google.com/uc?id=1BRKp-h3b8-KoyesG1Q39f15cZFPUajRx
@@ -26,6 +28,7 @@ RUN gdown https://drive.google.com/uc?id=1-5HUvh4ho3BLdZo3LRnOsrz4CeVp24jj
 WORKDIR /deep-food/deployment
 # Expose port 
 EXPOSE 8501
+
 
 # Run the application:
 CMD ["streamlit","run", "./app_web_deepfoodie.py"]
