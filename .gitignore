@@ -186,7 +186,7 @@ data/validation_real/
 data/scraping/scraping_200910/
 data/recipe_data_sets/RecipeNet
 food_identification/logs/
-food_identification/models/final_model/variables/
+#food_identification/models/final_model/variables/
 .idea/
 
 #Files
@@ -195,3 +195,4 @@ data/output/common_ingredients_500.dat
 data/recipe_data_sets/output/recipes_1M_shortened.csv
 data/recipe_data_sets/output/recipes_clean.npy
 recipes/input/recipes_one_hotted.npy
+food_identification/models/final_model/variables/variables.data-00001-of-00002
