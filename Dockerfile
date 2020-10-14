@@ -1,6 +1,6 @@
 FROM python:3.6.10
 
-RUN pip3 install virtualenv
+RUN pip install virtualenv
 #RUN python -m virtualenv deep-food -p python3.6.10
 #RUN python source deep-food/bin/activate
 
