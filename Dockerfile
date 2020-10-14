@@ -25,7 +25,7 @@ WORKDIR /deep-food/recipes/input
 # Add one-hot encoded recipes: recipes_one_hotted.npy
 RUN gdown https://drive.google.com/uc?id=1-5HUvh4ho3BLdZo3LRnOsrz4CeVp24jj
 
-WORKDIR /deep-food/food_identification/final_model/variables
+WORKDIR /deep-food/food_identification/models/final_model/variables
 # Add variables.data-00001-of-00002 file
 RUN gdown https://drive.google.com/uc?id=1WLNszn9oGpckj08JaxIp3aF2xLvTL5XJ
 
