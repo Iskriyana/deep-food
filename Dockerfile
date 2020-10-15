@@ -7,7 +7,7 @@ RUN pip install virtualenv
 #ENV VIRTUAL_ENV=/deep-food
 RUN virtualenv deep-food -p python3.6.10
 #ENV PATH="VIRTUAL_ENV/bin:$PATH"
-RUN export PATH="/usr/local/bin:$PATH"
+RUN export PATH=/usr/local/bin:$PATH
 
 WORKDIR /deep-food
 ADD . /deep-food
