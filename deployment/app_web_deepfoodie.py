@@ -1,16 +1,14 @@
 import streamlit as st
-import os
-import time
-import tensorflow as tf
-import pandas as pd
-import seaborn as sns
 import numpy as np
-import pathlib
-import matplotlib.pyplot as plt
 import cv2
-import glob, os, sys, inspect
+import os
+import sys
+import inspect
 import json
-import csv
+
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
 
 import food_identification.models.model_helpers as model_helpers
 from recipes.similarity_finder_for_app import find_similar_recipes
@@ -22,12 +20,6 @@ from tensorflow.keras.applications.inception_v3 import preprocess_input as prepr
 from tensorflow.keras.models import Sequential, save_model, load_model
 
 from PIL import Image
-
-from pathlib import Path
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir) 
-
 
 # setting style
 with open("./utils/style.css") as f:
@@ -149,7 +141,7 @@ if activate_vision:
                                         img,
                                         pred_labels,
                                         probabilities,
-                                        x0, 
+                                        x0,
                                         y0,
                                         windowsize
                                               )
