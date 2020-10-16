@@ -12,6 +12,15 @@ import glob, os, sys, inspect
 import json
 import csv
 
+import food_identification.models.model_helpers as model_helpers
+from recipes.similarity_finder_for_app import find_similar_recipes
+
+# Importing the inception_v3 as the preprocessing model
+from tensorflow.keras.applications.inception_v3 import preprocess_input as preprocess_inception_v3
+
+# Getting the model
+from tensorflow.keras.models import Sequential, save_model, load_model
+
 from PIL import Image
 
 from pathlib import Path
@@ -19,17 +28,10 @@ current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfra
 parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, parent_dir) 
 
-import food_identification.models.model_helpers as model_helpers
 
-from recipes.similarity_finder_for_app import find_similar_recipes
-
-## setting style
+# setting style
 with open("./utils/style.css") as f:
     st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
-
-
-# Importing the inception_v3 as the preprocessing model
-from tensorflow.keras.applications.inception_v3 import preprocess_input as preprocess_inception_v3
 
 # load model parameters
 model_path = '../food_identification/models/final_model/'
@@ -38,10 +40,7 @@ with open(os.path.join(model_path, 'results_classifier.json')) as fp:
 
 classes = results_classifier['classes']
 ind2class = results_classifier['ind2class']
-ind2class = {int(k):v for (k,v) in ind2class.items()}
-
-# Getting the model
-from tensorflow.keras.models import Sequential, save_model, load_model
+ind2class = {int(k): v for (k, v) in ind2class.items()}
 
 # Defining the parameters for the sliding window model
 preprocess_func = preprocess_inception_v3
@@ -59,7 +58,7 @@ overlap_thr = 0.2
 scaling_factors = [1.5]
 sliding_strides = [64]
 
-#@st.cache
+
 def make_prediction(image):
     pred_labels, probabilities, x0, y0, windowsize = \
     model_helpers.object_detection_sliding_window(model=loaded_model, 
@@ -73,9 +72,10 @@ def make_prediction(image):
                                                       overlap_thr=overlap_thr)
     return pred_labels, probabilities, x0, y0, windowsize
 
-# WEB APP
 
+# WEB APP
 # Actual app
+
 st.text("")
 st.text("")
 st.text("")
@@ -135,22 +135,24 @@ if activate_vision:
     
     st.write("Loading Model...")
     loaded_model = load_model(
-    model_path,
-    custom_objects=None,
-    compile=True
-)
+                                model_path,
+                                custom_objects=None,
+                                compile=True
+                             )
     st.write('Making Predictions...')
-    pred_labels, probabilities, x0, y0, windowsize  = make_prediction(img)
+    pred_labels, probabilities, x0, y0, windowsize = make_prediction(img)
     
-    #initialize function of detection
+    # initialize function of detection
     
     st.write('This is what deep-foodie has found')
-    fig = model_helpers.visualize_predictions(img, 
-                                          pred_labels, 
-                                          probabilities, 
-                                          x0, 
-                                          y0,
-                                          windowsize)
+    fig = model_helpers.visualize_predictions(
+                                        img,
+                                        pred_labels,
+                                        probabilities,
+                                        x0, 
+                                        y0,
+                                        windowsize
+                                              )
     st.write(fig)
     
     st.write("Okay, here are the ingredients that you have:")
