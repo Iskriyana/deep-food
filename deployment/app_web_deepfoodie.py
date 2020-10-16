@@ -98,7 +98,7 @@ Final project of Data Science Retreat, brought to you in collaboration by:
 - Iskriyana Vasileva
 """)
 
-st.write("### Upload your ingredients, deepfodie is waiting to prepare some recipes for you!")
+st.write("### Upload your ingredients, deepfoodie is waiting to prepare some recipes for you!")
 
 
 ""
