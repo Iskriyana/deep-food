@@ -19,7 +19,6 @@ from data.data_helpers import resize_image_to_1024
 from config import *
 import app_utils as app_utils
 
-
 # setting style
 with open("./utils/style.css") as f:
     st.markdown('<style>{}</style>'.format(f.read()), unsafe_allow_html=True)
@@ -28,7 +27,7 @@ with open("./utils/style.css") as f:
 def main():
     """Main web app
     """
-
+    
     # Write header
     st.text("")
     st.text("")
@@ -51,11 +50,9 @@ def main():
 
     st.write("### Upload your ingredients, deepfodie is waiting to prepare some recipes for you!")
 
-
     ""
     ""
     "We will begin by analyzing the ingredients that are available to you"
-
     ""
     ""
 

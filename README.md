@@ -34,9 +34,12 @@
         * https://drive.google.com/file/d/1BRKp-h3b8-KoyesG1Q39f15cZFPUajRx/view?usp=sharing
         * https://drive.google.com/file/d/1hAk4KfT0fDOLRWXiK7WLi0oH1whhuA7w/view?usp=sharing
     * in recipes/input - https://drive.google.com/file/d/1-5HUvh4ho3BLdZo3LRnOsrz4CeVp24jj/view?usp=sharing 
+    * in models/final_model/variables - https://drive.google.com/file/d/1WLNszn9oGpckj08JaxIp3aF2xLvTL5XJ/view?usp=sharing
 
+## Link to App 
+http://34.75.113.48/
 
-## Run Web App locally
+## If you want to run the web app locally
 * Go to the deployment folder `cd deployment`
 * Start the application `streamlit run app_web_deepfoodie.py`
   * In case you get the error "ModuleNotFoundError: No module named 'importlib_metadata'", deactivate and activate the environment again
