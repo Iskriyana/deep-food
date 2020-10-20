@@ -8,6 +8,9 @@ import numpy as np
 import random
 from PIL import Image
 import cv2
+import base64
+from base64 import b64decode
+import io
 
 
 def is_image(filename):
@@ -17,62 +20,61 @@ def is_image(filename):
 
 
 def clean_label(label):
-  """
-  Standardize class names (e.g. singular/plural versions)
-  """
+    """
+    Standardize class names (e.g. singular/plural versions)
+    """
+    if label == 'apples':
+        label = 'apple'
+    elif label == 'apricots':
+        label = 'apricot'
+    elif label == 'avocados':
+        label = 'avocado'
+    elif label == 'bananas':
+        label = 'banana'
+    elif label == 'cherries':
+        label = 'cherry'
+    elif label == 'cantaloupes':
+        label = 'melon'
+    elif label == 'figs':
+        label = 'fig'
+    elif label == 'kiwifruit':
+        label = 'kiwi'
+    elif label == 'grapefruits':
+        label = 'grapefruit'
+    elif label == 'lemons':
+        label = 'lemon'
+    elif label == 'limes':
+        label = 'lime'
+    elif label == 'mangos':
+        label = 'mango'
+    elif label == 'oranges':
+        label = 'orange'
+    elif label == 'pineapples':
+        label = 'pineapple'
+    elif label == 'strawberries':
+        label = 'strawberry'
+    elif label == 'watermelons':
+        label = 'watermelon'
+    elif label == 'blackberries':
+        label = 'blackberry'
+    elif label == 'blueberries':
+        label = 'blueberry'
+    elif label == 'olives':
+        label = 'olive'
+    elif label == 'peaches':
+        label = 'peach'
+    elif label == 'pears':
+        label = 'pear'
+    elif label == 'plums':
+        label = 'plum'
+    elif label == 'pomegranates':
+        label = 'pomegranate'
+    elif label == 'raspberries':
+        label = 'raspberry'
+    elif label == 'tomatoes':
+        label = 'tomato'
 
-  if label == 'apples':
-    label = 'apple'
-  elif label == 'apricots':
-    label = 'apricot'
-  elif label == 'avocados':
-    label = 'avocado'
-  elif label == 'bananas':
-    label = 'banana'
-  elif label == 'cherries':
-    label = 'cherry'
-  elif label == 'cantaloupes':
-    label = 'melon'
-  elif label == 'figs':
-    label = 'fig'
-  elif label == 'kiwifruit':
-    label = 'kiwi'
-  elif label == 'grapefruits':
-    label = 'grapefruit'
-  elif label == 'lemons':
-    label = 'lemon'
-  elif label == 'limes':
-    label = 'lime'
-  elif label == 'mangos':
-    label = 'mango'
-  elif label == 'oranges':
-    label = 'orange'
-  elif label == 'pineapples':
-    label = 'pineapple'
-  elif label == 'strawberries':
-    label = 'strawberry'
-  elif label == 'watermelons':
-    label = 'watermelon'
-  elif label == 'blackberries':
-    label = 'blackberry'
-  elif label == 'blueberries':
-    label = 'blueberry'
-  elif label == 'olives':
-    label = 'olive'
-  elif label == 'peaches':
-    label = 'peach'
-  elif label == 'pears':
-    label = 'pear'
-  elif label == 'plums':
-    label = 'plum'
-  elif label == 'pomegranates':
-    label = 'pomegranate'
-  elif label == 'raspberries':
-    label = 'raspberry'
-  elif label == 'tomatoes':
-    label = 'tomato'
-
-  return label
+    return label
 
 
 def generate_data_df(data_directories):
@@ -474,3 +476,89 @@ def generate_artifical_validation_dataset(data_df, background_path, N_samples=10
         val_data[n] = sample
 
     return val_data
+
+
+def base64_to_image(s):
+    """Decodes image from base64 encoded string representation.
+    
+    Args:
+        s: Input string with base64
+    
+    Returns:
+        im: PIL Image
+    """
+
+    imgdata = b64decode(s)
+    im = Image.open(io.BytesIO(imgdata))
+    return im
+
+
+def load_img_as_base64(path):
+    """Loads image file and encodes it into string with base64
+    
+    Args:
+        path: Path to image file
+        
+    Returns:
+        im: PIL Image
+        encoded_string: Encoded image
+    """
+
+    with open(path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+    
+    imgdata = b64decode(encoded_string)
+    im = Image.open(io.BytesIO(imgdata))
+    return im, encoded_string
+
+
+def convert_numpy_image_to_json_instance(np_img):
+    """Re-format numpy image tensor as base64 encoded image instance
+    
+    Args:
+        np_img: Input image
+        
+    Returns:
+        img: PIL image
+        encoded_string: Base64 encoded image string
+    """
+    byteImgIO = io.BytesIO()
+    img_bytes = Image.fromarray(np_img)
+    img_bytes.save(byteImgIO, "JPEG")
+    byteImgIO.seek(0)
+    img_bytes = byteImgIO.read()
+    
+    encoded_string = base64.b64encode(img_bytes).decode('utf-8')
+    img = Image.open(io.BytesIO(img_bytes))
+    
+    return img, encoded_string
+
+
+def encode_stack_as_JSON(stack):
+    """Format image stack as list of JSON instances
+    
+    Args:
+        stack: Input image stack with shape (N, X, Y, 3)
+    
+    Returns:
+        instances: List of JSON-encoded instances
+    """
+
+    img_strings = [s for (_, s) in map(convert_numpy_image_to_json_instance, stack)]    
+    instances = [{'bytes': {'b64': encoded_string}} for encoded_string in img_strings]
+    return instances
+    
+    
+def resize_image_to_1024(img):
+    """Resize image so that width or height is maximally 1024 pixels.
+
+    Args:
+        img: Input image as numpy array
+
+    Returns:
+        img: Resized output image as numpy array
+    """
+    scaling_factor = max(img.shape)/1024.
+    new_shape = (int(img.shape[1]/scaling_factor), int(img.shape[0]/scaling_factor))
+    img = cv2.resize(img, new_shape)
+    return img

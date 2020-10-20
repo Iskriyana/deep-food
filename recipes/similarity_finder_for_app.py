@@ -34,7 +34,7 @@ def find_similar_recipes(target_recipe_txt):
     #    max_sim = max_sim - 1
         
     ###
-    tmp = np.argsort(similarity)[-3:]
+    tmp = np.argsort(similarity)[-5:]
 
     #final_suggestions = df.iloc[similar_ids[0:3]]
     final_suggestions = df.iloc[tmp]

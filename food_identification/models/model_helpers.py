@@ -8,8 +8,32 @@ import random
 from PIL import Image
 import cv2
 import matplotlib.patches as patches
+import googleapiclient.discovery
+from data.data_helpers import encode_stack_as_JSON
+import time
+import streamlit as st
 
 
+class tqdm:
+    """Tqdm-style progress bar for streamlit web app.
+    Source: https://github.com/streamlit/streamlit/issues/160
+    """
+    def __init__(self, iterable, title=None):
+        if title:
+            st.write(title)
+        self.prog_bar = st.progress(0)
+        self.iterable = iterable
+        self.length = len(iterable)
+        self.i = 0
+
+    def __iter__(self):
+        for obj in self.iterable:
+            yield obj
+            self.i += 1
+            current_prog = self.i / self.length
+            self.prog_bar.progress(current_prog)
+
+            
 def image2d_as_strided(img, kernel_size=224, stride=32):
     """
     Transforms a 2D array into a stack of strided squares
@@ -118,18 +142,42 @@ def predict_stack(model, preprocess_func, stack):
     Predict labels on a given image stack
 
     Args:
-        model: loaded model
-        preprocess_func: function for image pre-processing
-        stack: image stack
+        model: loaded model / EITHER a compiled Tensorflow model OR 
+            a dictionary specifying a deployed model on Google AI platform
+        preprocess_func: function for image pre-processing / only for local prediction
+        stack: input image stack
 
     Returns:
         predictions: integer-encoded class labels
         probabilites: associated probabilities
     """
-
-    predict_proba = model.predict(preprocess_func(stack))
-    predictions = predict_proba.argmax(axis=1)
-    probabilities = predict_proba[np.arange(0, predict_proba.shape[0]), predictions]
+    
+    if type(model) == dict:
+        print('Predicting on Google AI platform ...')
+        print(f'Stack: {len(stack)} images')
+        # prediction using Google AI platform
+        assert set(model.keys()) == set(['project', 'model', 'version'])
+        
+        instances = encode_stack_as_JSON(stack)
+        responses = []
+        N_chunks = 6
+        L_chunk = len(instances) // N_chunks + 1
+        #for i in range(N_chunks):
+        for i in tqdm(range(N_chunks), title='Please wait a moment, deepfoodie is scanning your picture ...'):
+            chunk = instances[i*L_chunk:(i+1)*L_chunk]
+            t1 = time.time()
+            responses.extend(
+                ai_platform_predict_json(model['project'], model['model'], chunk, version=model['version'])
+            )        
+            print(f'Prediction time : {time.time()-t1:.2f} seconds')
+        predictions = np.array([res['CLASSES'] for res in responses])
+        probabilities = np.array([res['PROBABILITIES'] for res in responses]).max(1)
+    else:
+        print('Local prediction...')
+        # local prediction
+        predict_proba = model.predict(preprocess_func(stack))
+        predictions = predict_proba.argmax(axis=1)
+        probabilities = predict_proba[np.arange(0, predict_proba.shape[0]), predictions]
 
     return predictions, probabilities
 
@@ -482,3 +530,38 @@ def object_detection_sliding_window(model, input_img, preprocess_function, kerne
                                                                         overlap_thr=overlap_thr)
 
     return pred_labels, probabilities, x0, y0, windowsize
+
+
+def ai_platform_predict_json(project, model, instances, version=None):
+    """Send json data to a deployed model for prediction.
+
+    Args:
+        project (str): project where the AI Platform Model is deployed.
+        model (str): model name.
+        instances ([Mapping[str: Any]]): Keys should be the names of Tensors
+            your deployed model expects as inputs. Values should be datatypes
+            convertible to Tensors, or (potentially nested) lists of datatypes
+            convertible to tensors.
+        version: str, version of the model to target.
+    Returns:
+        Mapping[str: any]: dictionary of prediction results defined by the
+            model.
+    """
+    # Create the AI Platform service object.
+    # To authenticate set the environment variable
+    # GOOGLE_APPLICATION_CREDENTIALS=<path_to_service_account_file>
+    service = googleapiclient.discovery.build('ml', 'v1')
+    name = 'projects/{}/models/{}'.format(project, model)
+
+    if version is not None:
+        name += '/versions/{}'.format(version)
+
+    response = service.projects().predict(
+        name=name,
+        body={'instances': instances}
+    ).execute()
+
+    if 'error' in response:
+        raise RuntimeError(response['error'])
+
+    return response['predictions']
