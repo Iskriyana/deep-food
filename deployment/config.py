@@ -38,9 +38,9 @@ EXPORT_DIR = 'output'
 EXPORT_MODEL = 'exported_model'
 
 # set path to key credentials
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "my-ml6-challenge-2462e6522a17.json"
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "deepfoodie-0d2d322738d7.json"
 
-MODEL_SPECS = {'project': 'my-ml6-challenge',
-               'model': 'food_classifier', 
-               'version': 'v0_1'}
+MODEL_SPECS = {'project': 'deepfoodie',
+               'model': 'deepfoodie_img_ident',
+               'version': 'v1'}
 

@@ -197,3 +197,4 @@ data/recipe_data_sets/output/recipes_1M_shortened.csv
 data/recipe_data_sets/output/recipes_clean.npy
 recipes/input/recipes_one_hotted.npy
 food_identification/models/final_model/variables/variables.data-00001-of-00002
+deployment/deepfoodie-0d2d322738d7.json
