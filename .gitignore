@@ -188,6 +188,7 @@ data/recipe_data_sets/RecipeNet
 food_identification/logs/
 #food_identification/models/final_model/variables/
 .idea/
+exported_model-2020-10-16-15-04-36/
 
 #Files
 project_plan.jpg
